@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="id">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+    <meta charset="UTF-8">
+    <title>JiaBank - Personal Finance</title>
+    
+    
+    
+    <!-- PWA Native Mobile Behavior Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="JiaBank">
+    <meta name="theme-color" content="#1e1e1e">
+    
+    <!-- App Icons (Logo Khusus untuk HP/Desktop) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEyMCIgZmlsbD0iIzFlMWUxZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+4oKpPC90ZXh0Pjwvc3ZnPg==">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEyMCIgZmlsbD0iIzFlMWUxZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+4oKpPC90ZXh0Pjwvc3ZnPg==">
+        
+    <!-- Tailwind CSS (Framework) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js (Grafik) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts (Inter & Space Grotesk) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome (Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #f4f0ec; /* Cream/Off-white */
+            --text-main: #1e1e1e;
+            --accent-indigo: #4f46e5;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --brutal-border: 2px solid #1e1e1e;
+            --brutal-shadow: 4px 4px 0px #1e1e1e;
+            --brutal-shadow-sm: 2px 2px 0px #1e1e1e;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
+            /* Tambahan untuk mencegah teks terpilih saat gestur tap di perangkat mobile */
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none; 
+        }
+
+        /* Mengizinkan input teks untuk diketik */
+        input, textarea { user-select: text; }
+
+        h1, h2, h3, .brand-font { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Neo-Brutalism Utilities */
+        .nb-box {
+            background-color: #ffffff;
+            border: var(--brutal-border);
+            box-shadow: var(--brutal-shadow);
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .nb-button {
+            border: var(--brutal-border);
+            box-shadow: var(--brutal-shadow-sm);
+            transition: all 0.1s ease;
+            font-weight: 600;
+        }
+        .nb-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px #1e1e1e;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: var(--brutal-border);
+            border-right: var(--brutal-border);
+            border-radius: 0.75rem;
+        }
+
+        /* Pattern Lock Styles */
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            place-items: center;
+            gap: 1rem;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .pattern-dot {
+            width: 48px;
+            height: 48px;
+            background-color: var(--bg-color);
+            border: 3px solid #1e1e1e;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: all 0.2s;
+        }
+        .pattern-dot.active {
+            background-color: var(--text-main);
+            transform: scale(1.15);
+        }
+        #pattern-svg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            background-color: var(--accent-indigo);
+            color: white;
+            border: 3px solid #1e1e1e;
+            box-shadow: 0px 4px 0px #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            z-index: 50;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .fab:active {
+            transform: translate(-50%, 4px);
+            box-shadow: 0px 0px 0px #1e1e1e;
+        }
+        
+        @media (min-width: 768px) {
+            .fab { 
+                bottom: 2rem; right: 2rem; left: auto; transform: none; 
+                border: var(--brutal-border); box-shadow: var(--brutal-shadow); 
+            }
+            .fab:active {
+                transform: translate(4px, 4px);
+                box-shadow: 0px 0px 0px #1e1e1e;
+            }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--text-main); border-radius: 4px; }
+
+        .hidden { display: none !important; }
+        
+        .chat-bubble-user { background-color: var(--accent-indigo); color: white; border: var(--brutal-border); border-bottom-right-radius: 0; }
+        .chat-bubble-ai { background-color: white; color: var(--text-main); border: var(--brutal-border); border-bottom-left-radius: 0; }
+        
+        #msg-box-overlay { z-index: 1000; }
+    </style>
+</head>
+<body class="antialiased flex h-screen w-screen overflow-hidden">
+
+    <!-- Modal Konfirmasi/Pesan Global -->
+    <div id="msg-box-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center">
+        <div class="nb-box p-6 max-w-sm w-full mx-4 bg-white flex flex-col items-center text-center">
+            <h3 id="msg-box-title" class="text-xl font-bold brand-font mb-2">Informasi</h3>
+            <p id="msg-box-text" class="mb-6 text-gray-700"></p>
+            <div id="msg-box-actions" class="flex gap-4 w-full">
+                <button id="msg-box-cancel" class="hidden flex-1 nb-button bg-gray-200 text-black py-2 rounded-md">Batal</button>
+                <button id="msg-box-ok" class="flex-1 nb-button bg-indigo-600 text-white py-2 rounded-md">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Halaman Auth & Pattern Lock -->
+    <div id="auth-container" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#f4f0ec] w-full h-full">
+        <!-- Div Firebase Auth -->
+        <div id="login-screen" class="nb-box p-8 max-w-md w-full mx-4 hidden flex-col items-center text-center">
+            <div class="w-16 h-16 bg-black rounded-xl border-2 border-black flex items-center justify-center mb-4">
+                <i class="fa-solid fa-won-sign text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold brand-font mb-2">JiaBank</h1>
+            <p class="text-sm text-gray-600 mb-8">Personal Finance App</p>
+            
+            <input type="email" id="auth-email" placeholder="Email Admin" class="w-full nb-box p-3 mb-4 focus:outline-none">
+            <input type="password" id="auth-password" placeholder="Password" class="w-full nb-box p-3 mb-6 focus:outline-none">
+            <button id="btn-login" class="w-full nb-button bg-[#4f46e5] text-white py-3 rounded-md mb-2">Masuk Akses Admin</button>
+            
+            <button class="btn-install-app hidden w-full nb-button bg-emerald-500 text-white py-3 rounded-md mb-2" onclick="installApp()"><i class="fa-solid fa-download mr-2"></i>Install Aplikasi (PWA)</button>
+            
+            <p class="text-xs text-gray-500 mt-4">*Database setup otomatis berjalan saat pertama kali login.</p>
+        </div>
+
+        <!-- Div Pattern Lock -->
+        <div id="pattern-screen" class="nb-box p-8 max-w-md w-full mx-4 hidden flex-col items-center text-center">
+            <div class="w-12 h-12 bg-black rounded-xl border-2 border-black flex items-center justify-center mb-4 shadow-[2px_2px_0px_#1e1e1e]">
+                <i class="fa-solid fa-won-sign text-white text-xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold brand-font mb-2" id="pattern-title">Gambar Pola Akses</h2>
+            <p class="text-sm text-gray-600 mb-8" id="pattern-subtitle">Lindungi data keuangan Anda</p>
+            
+            <div class="pattern-container relative h-72 w-72 mb-6 mx-auto">
+                <svg id="pattern-svg"><polyline id="pattern-line" fill="none" stroke="#1e1e1e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="pattern-grid h-full w-full" id="pattern-grid"></div>
+            </div>
+            <button id="btn-logout" class="text-sm text-red-500 font-semibold underline mt-4">Keluar Admin (Logout)</button>
+        </div>
+    </div>
+
+    <!-- App Layout Container -->
+    <div id="app-container" class="hidden flex-col md:flex-row h-full w-full">
+        
+        <!-- Sidebar Desktop -->
+        <nav class="hidden md:flex flex-col w-64 h-full border-r-2 border-black bg-white z-40">
+            <div class="p-6 border-b-2 border-black flex items-center gap-3">
+                <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-won-sign text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold brand-font">JiaBank</h1>
+            </div>
+            <div class="flex-1 flex flex-col gap-2 p-4 pt-6">
+                <button onclick="navigate('dashboard')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-lg text-left font-semibold hover:bg-gray-100 transition border-2 border-transparent" data-target="dashboard">
+                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+                </button>
+                <button onclick="navigate('history')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-lg text-left font-semibold hover:bg-gray-100 transition border-2 border-transparent" data-target="history">
+                    <i class="fa-solid fa-list w-5"></i> Riwayat
+                </button>
+                <button onclick="navigate('ai')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-lg text-left font-semibold hover:bg-gray-100 transition border-2 border-transparent" data-target="ai">
+                    <i class="fa-solid fa-robot w-5"></i> AI Assistant
+                </button>
+                <button onclick="navigate('settings')" class="nav-btn w-full flex items-center gap-3 p-3 rounded-lg text-left font-semibold hover:bg-gray-100 transition border-2 border-transparent" data-target="settings">
+                    <i class="fa-solid fa-gear w-5"></i> Pengaturan
+                </button>
+            </div>
+            <div class="p-4 border-t-2 border-black">
+                <button onclick="lockApp()" class="w-full flex items-center justify-center gap-2 p-3 bg-red-100 text-red-600 rounded-lg font-bold border-2 border-red-200 hover:bg-red-200 transition">
+                    <i class="fa-solid fa-lock"></i> Kunci Layar
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 h-full overflow-y-auto pb-24 md:pb-0 relative bg-transparent" id="main-content">
+            
+            <section id="sec-dashboard" class="page-section p-4 md:p-8 max-w-6xl mx-auto hidden">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-3xl font-bold brand-font">Dashboard</h2>
+                        <p class="text-gray-600 mt-1" id="dash-period-info">Periode: Memuat...</p>
+                    </div>
+                </div>
+
+                <!-- AI Insight Banner -->
+                <div id="dash-ai-banner" class="nb-box p-4 mb-6 bg-indigo-50 border-indigo-200 hidden flex-row items-center gap-4 relative overflow-hidden transition-all duration-500">
+                    <div class="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-2xl flex-shrink-0 shadow-[2px_2px_0px_#1e1e1e] border-2 border-black z-10">
+                        <i class="fa-solid fa-robot" id="dash-ai-icon"></i>
+                    </div>
+                    <div class="flex-1 z-10">
+                        <p class="font-bold text-sm text-indigo-800 mb-1">Jia Insight <span class="text-xs font-normal text-indigo-600 ml-1 opacity-70" id="dash-ai-time">Baru saja</span></p>
+                        <p class="text-sm text-gray-800 leading-snug font-medium" id="dash-ai-message">Memuat pesan...</p>
+                    </div>
+                    <i class="fa-solid fa-sparkles absolute -right-2 -top-2 text-5xl text-indigo-200 opacity-40 pointer-events-none"></i>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="nb-box p-6 bg-indigo-600 text-white shadow-[4px_4px_0px_#1e1e1e]">
+                        <p class="text-indigo-200 text-sm font-semibold mb-1">Sisa Keuangan (Total)</p>
+                        <h3 class="text-4xl font-bold brand-font truncate" id="dash-saldo">₩0</h3>
+                    </div>
+                    <div class="glass-panel p-6 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-500 text-sm font-semibold mb-1">Pemasukan Periode Ini</p>
+                                <h3 class="text-2xl font-bold text-emerald-600 truncate" id="dash-income">₩0</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 border border-emerald-200"><i class="fa-solid fa-arrow-down"></i></div>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-500 text-sm font-semibold mb-1">Pengeluaran Periode Ini</p>
+                                <h3 class="text-2xl font-bold text-red-500 truncate" id="dash-expense">₩0</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500 border border-red-200"><i class="fa-solid fa-arrow-up"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="nb-box p-6 bg-white">
+                        <h3 class="font-bold text-lg mb-4">Arus Kas (Periode Aktif)</h3>
+                        <div class="w-full h-64"><canvas id="chartLine"></canvas></div>
+                    </div>
+                    <div class="nb-box p-6 bg-white">
+                        <h3 class="font-bold text-lg mb-4">Pengeluaran Terbesar</h3>
+                        <div class="w-full h-64 flex justify-center"><canvas id="chartPie"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="nb-box p-6 bg-white mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg">Transaksi Terbaru</h3>
+                        <button onclick="navigate('history')" class="text-indigo-600 text-sm font-semibold underline">Lihat Semua</button>
+                    </div>
+                    <div id="dash-recent-list" class="flex flex-col gap-3"></div>
+                </div>
+            </section>
+
+            <section id="sec-history" class="page-section p-4 md:p-8 max-w-6xl mx-auto hidden h-full flex flex-col">
+                <h2 class="text-3xl font-bold brand-font mb-6">Riwayat Transaksi</h2>
+                
+                <div class="glass-panel p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <i class="fa-solid fa-filter text-gray-500"></i>
+                        <select id="filter-period" class="nb-box p-2 bg-white flex-1 md:w-48 text-sm focus:outline-none cursor-pointer"></select>
+                    </div>
+                    <div class="flex items-center gap-2 w-full md:w-auto relative">
+                        <i class="fa-solid fa-search absolute left-3 text-gray-400"></i>
+                        <input type="text" id="search-history" placeholder="Cari nama/keterangan..." class="nb-box p-2 pl-9 bg-white w-full md:w-64 text-sm focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="nb-box bg-white flex-1 overflow-hidden flex flex-col shadow-[4px_4px_0px_#1e1e1e]">
+                    <div class="p-4 border-b-2 border-black flex justify-between bg-gray-50 text-sm font-semibold">
+                        <span id="hist-summary-income" class="text-emerald-600">Total Masuk: ₩0</span>
+                        <span id="hist-summary-expense" class="text-red-500">Total Keluar: ₩0</span>
+                    </div>
+                    <div id="history-list" class="flex-1 overflow-y-auto p-2 md:p-4 flex flex-col gap-2">
+                        <div class="text-center text-gray-400 mt-10">Memuat data...</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-ai" class="page-section p-4 md:p-8 max-w-4xl mx-auto hidden h-full flex flex-col">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 bg-black text-white rounded-xl flex items-center justify-center text-2xl shadow-[2px_2px_0px_#1e1e1e] border-2 border-black"><i class="fa-solid fa-robot"></i></div>
+                    <div>
+                        <h2 class="text-3xl font-bold brand-font">Jia AI</h2>
+                        <p class="text-sm text-gray-600">Asisten Keuangan Pribadi Anda</p>
+                    </div>
+                </div>
+
+                <div class="nb-box bg-white flex-1 flex flex-col overflow-hidden shadow-[4px_4px_0px_#1e1e1e]">
+                    <div id="chat-box" class="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-4 bg-gray-50/50">
+                        <div class="flex flex-col gap-1 max-w-[85%] self-start">
+                            <div class="chat-bubble-ai p-3 px-4 shadow-sm text-sm md:text-base">
+                                Halo! Saya Jia, asisten keuangan Anda. Apa yang ingin Anda ketahui hari ini? (Anda juga dapat memerintahkan saya mengubah saldo)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 border-t-2 border-black bg-white flex items-end gap-2">
+                        <button id="btn-ai-voice" class="nb-button bg-gray-100 w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full text-indigo-600" title="Input Suara">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                        <div class="flex-1 bg-white nb-box p-1 flex">
+                            <textarea id="ai-input" rows="1" class="w-full p-2 resize-none focus:outline-none text-sm md:text-base bg-transparent" placeholder="Tanya tentang keuangan Anda..."></textarea>
+                        </div>
+                        <button id="btn-ai-send" class="nb-button bg-indigo-600 text-white w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-settings" class="page-section p-4 md:p-8 max-w-3xl mx-auto hidden">
+                <h2 class="text-3xl font-bold brand-font mb-6">Pengaturan</h2>
+                
+                <div class="flex flex-col gap-6">
+                    <div class="nb-box p-6 bg-white shadow-sm">
+                        <h3 class="font-bold text-lg mb-2"><i class="fa-solid fa-calendar-days text-indigo-500 mr-2"></i>Tanggal Rekap Bulanan</h3>
+                        <p class="text-sm text-gray-600 mb-4">Tentukan tanggal tutup buku.</p>
+                        <div class="flex items-center gap-4">
+                            <input type="number" id="setting-recap-day" min="1" max="28" class="nb-box p-2 w-24 text-center font-bold" value="25">
+                            <button id="btn-save-recap" class="nb-button bg-black text-white px-4 py-2 rounded-md">Simpan Perubahan</button>
+                        </div>
+                    </div>
+
+                    <div class="nb-box p-6 bg-white shadow-sm">
+                        <h3 class="font-bold text-lg mb-2"><i class="fa-solid fa-lock text-indigo-500 mr-2"></i>Ubah Pattern Password</h3>
+                        <p class="text-sm text-gray-600 mb-4">Ubah pola akses harian Anda.</p>
+                        <button id="btn-change-pattern" class="nb-button bg-gray-200 text-black px-4 py-2 rounded-md w-full md:w-auto">Buat Pola Baru</button>
+                        <div id="change-pattern-area" class="hidden mt-4 border-t-2 border-black pt-4 flex flex-col items-center">
+                            <p class="font-semibold mb-4" id="new-pattern-instruction">Gambar Pola Baru</p>
+                            <div class="pattern-container relative h-72 w-72 mb-6 mx-auto">
+                                <svg id="new-pattern-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-[1]"><polyline id="new-pattern-line" fill="none" stroke="#1e1e1e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <div class="pattern-grid h-full w-full" id="new-pattern-grid"></div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="btn-cancel-pattern" class="nb-button bg-gray-200 px-4 py-2 rounded-md text-sm">Batal</button>
+                                <button id="btn-confirm-pattern" class="nb-button bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hidden">Konfirmasi Pola</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="nb-box p-6 bg-white shadow-sm">
+                        <h3 class="font-bold text-lg mb-2"><i class="fa-solid fa-microchip text-indigo-500 mr-2"></i>Koneksi Gemini AI</h3>
+                        <p class="text-sm text-gray-600 mb-4">Masukkan API Key Gemini Anda agar fitur AI Assistant dan Scan Nota berfungsi.</p>
+                        <div class="flex flex-col md:flex-row gap-2">
+                            <input type="password" id="setting-gemini-key" placeholder="AIzaSy..." class="nb-box p-2 flex-1 text-sm focus:outline-none">
+                            <button id="btn-save-gemini" class="nb-button bg-indigo-600 text-white px-4 py-2 rounded-md">Simpan API Key</button>
+                        </div>
+                    </div>
+
+                    <div class="nb-box p-6 bg-white shadow-sm btn-install-app hidden">
+                        <h3 class="font-bold text-lg mb-2"><i class="fa-solid fa-mobile-screen text-indigo-500 mr-2"></i>Install Aplikasi Ke HP</h3>
+                        <p class="text-sm text-gray-600 mb-4">Install JiaBank ke Home Screen HP Anda agar tampil penuh tanpa browser dan bisa diakses lebih cepat.</p>
+                        <button onclick="installApp()" class="nb-button bg-emerald-500 text-white px-4 py-2 rounded-md w-full"><i class="fa-solid fa-download mr-2"></i>Install Sekarang</button>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="h-10 md:hidden w-full bg-transparent"></div>
+        </main>
+
+        <button id="fab-add" class="fab active:translate-y-1 transition-all" onclick="openNewTransactionModal()">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+
+        <!-- Bottom Navigation Bar Mobile -->
+        <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t-2 border-black flex justify-between items-center px-4 p-2 pb-4 z-40 shadow-[0_-4px_0px_rgba(0,0,0,0.1)]">
+            <button onclick="navigate('dashboard')" class="nav-btn-mob flex flex-col items-center p-2 text-gray-500 w-12" data-target="dashboard">
+                <i class="fa-solid fa-chart-pie text-xl mb-1"></i> <span class="text-[10px] font-bold">Home</span>
+            </button>
+            <button onclick="navigate('history')" class="nav-btn-mob flex flex-col items-center p-2 text-gray-500 w-12" data-target="history">
+                <i class="fa-solid fa-list text-xl mb-1"></i> <span class="text-[10px] font-bold">Riwayat</span>
+            </button>
+            
+            <div class="w-16 h-10"></div>
+            
+            <button onclick="navigate('ai')" class="nav-btn-mob flex flex-col items-center p-2 text-gray-500 w-12" data-target="ai">
+                <i class="fa-solid fa-robot text-xl mb-1"></i> <span class="text-[10px] font-bold">Jia AI</span>
+            </button>
+            <button onclick="navigate('settings')" class="nav-btn-mob flex flex-col items-center p-2 text-gray-500 w-12" data-target="settings">
+                <i class="fa-solid fa-gear text-xl mb-1"></i> <span class="text-[10px] font-bold">Seting</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Modal Input/Edit Transaksi -->
+    <div id="modal-transaction" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-end md:items-center justify-center">
+        <div class="bg-white w-full md:max-w-lg md:rounded-xl rounded-t-xl border-t-2 border-l-2 border-r-2 md:border-2 border-black shadow-[0_-4px_0px_#1e1e1e] md:shadow-[4px_4px_0px_#1e1e1e] h-[85vh] md:h-auto max-h-[90vh] flex flex-col overflow-hidden transition-transform transform translate-y-full" id="modal-tx-content">
+            
+            <div class="p-4 border-b-2 border-black flex justify-between items-center bg-gray-50">
+                <h3 class="font-bold text-lg brand-font" id="tx-modal-title">Catat Transaksi</h3>
+                <button onclick="closeTransactionModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition text-gray-700">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="flex border-b-2 border-black bg-white">
+                <button class="tx-tab-btn flex-1 py-3 font-semibold text-sm border-b-4 border-indigo-600 text-indigo-600 transition" data-tab="manual"><i class="fa-solid fa-pen mr-1"></i> Manual</button>
+                <button class="tx-tab-btn flex-1 py-3 font-semibold text-sm border-b-4 border-transparent text-gray-500 hover:bg-gray-50 transition" data-tab="voice"><i class="fa-solid fa-microphone mr-1"></i> Suara</button>
+                <button class="tx-tab-btn flex-1 py-3 font-semibold text-sm border-b-4 border-transparent text-gray-500 hover:bg-gray-50 transition" data-tab="photo"><i class="fa-solid fa-camera mr-1"></i> Scan Nota</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 relative bg-white">
+                <input type="hidden" id="tx-id" value="">
+                
+                <div id="tx-tab-manual" class="tx-tab-content block">
+                    <div class="flex gap-2 mb-4 p-1 bg-gray-100 rounded-lg border-2 border-black shadow-[2px_2px_0px_#1e1e1e]">
+                        <button type="button" id="btn-type-expense" class="flex-1 py-2 rounded font-bold text-white bg-red-500 transition shadow-sm border border-black" onclick="setTxType('expense')">Pengeluaran</button>
+                        <button type="button" id="btn-type-income" class="flex-1 py-2 rounded font-bold text-gray-500 bg-transparent transition" onclick="setTxType('income')">Pemasukan</button>
+                        <input type="hidden" id="tx-type" value="expense">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-1">Tanggal</label>
+                        <input type="date" id="tx-date" class="w-full nb-box p-3 focus:outline-none" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-1">Nama Transaksi</label>
+                        <input type="text" id="tx-title" class="w-full nb-box p-3 focus:outline-none" placeholder="Cth: Makan Siang, Gaji..." required>
+                    </div>
+                    <div class="mb-4 relative">
+                        <label class="block text-sm font-semibold mb-1">Nominal (₩)</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-3 font-bold text-gray-500">₩</span>
+                            <input type="number" id="tx-amount" class="w-full nb-box p-3 pl-8 focus:outline-none" placeholder="0" required min="0">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-1">Keterangan (Opsional)</label>
+                        <textarea id="tx-note" rows="2" class="w-full nb-box p-3 focus:outline-none" placeholder="Catatan tambahan..."></textarea>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold mb-1">Foto Nota (Opsional)</label>
+                        <input type="file" id="tx-file" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-2 file:border-black file:text-sm file:font-semibold file:bg-gray-100 file:text-black hover:file:bg-gray-200 cursor-pointer">
+                        <img id="tx-preview-img" class="mt-2 hidden max-h-32 rounded-md border-2 border-black object-cover w-full">
+                    </div>
+                    <button type="button" onclick="saveTransactionManual()" id="btn-save-tx" class="w-full nb-button bg-black text-white py-4 rounded-lg text-lg flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Transaksi
+                    </button>
+                </div>
+
+                <div id="tx-tab-voice" class="tx-tab-content hidden h-full flex flex-col items-center justify-center text-center">
+                    <div class="relative w-32 h-32 mb-6 flex items-center justify-center">
+                        <div id="voice-ripple" class="absolute w-full h-full bg-indigo-500 rounded-full opacity-20 animate-ping hidden"></div>
+                        <button id="btn-record-voice" class="relative z-10 w-24 h-24 bg-indigo-600 text-white rounded-full border-4 border-black shadow-[4px_4px_0px_#1e1e1e] flex items-center justify-center text-4xl hover:bg-indigo-700 transition" onclick="toggleVoiceRecord()">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                    </div>
+                    <h3 class="font-bold text-xl mb-2" id="voice-status-title">Ketuk untuk Bicara</h3>
+                    <p class="text-sm text-gray-600 mb-6 px-4" id="voice-status-text">
+                        Sebutkan secara natural. Contoh:<br>
+                        <span class="italic font-semibold text-gray-800">"Pengeluaran makan siang 15000 won hari ini"</span>
+                    </p>
+                    <div id="voice-result-box" class="w-full nb-box bg-gray-50 p-4 text-left hidden border-dashed border-gray-400">
+                        <p class="text-xs text-gray-500 mb-1">Mendeteksi...</p>
+                        <p id="voice-transcript" class="font-medium text-sm italic">...</p>
+                    </div>
+                </div>
+
+                <div id="tx-tab-photo" class="tx-tab-content hidden h-full flex flex-col items-center justify-center text-center">
+                    <div id="scan-ui-initial" class="w-full flex flex-col items-center justify-center">
+                        <div class="w-20 h-20 bg-gray-100 rounded-2xl border-2 border-black flex items-center justify-center text-3xl mb-4 text-gray-600 shadow-[2px_2px_0px_#1e1e1e]">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Scan Nota dengan AI</h3>
+                        <p class="text-sm text-gray-600 mb-6 px-4">AI akan membaca nama merchant, total nominal, dan tanggal, lalu otomatis menyimpannya sebagai Pengeluaran.</p>
+                        
+                        <div class="flex gap-4 w-full px-2 md:px-6">
+                            <label class="flex-1 nb-button bg-black text-white py-3 rounded-lg cursor-pointer flex flex-col items-center justify-center gap-2">
+                                <i class="fa-solid fa-camera text-2xl"></i>
+                                <span class="text-xs font-bold mt-1">Kamera</span>
+                                <input type="file" id="scan-file-cam" accept="image/*" capture="environment" class="hidden" onchange="processScanImage(event)">
+                            </label>
+                            <label class="flex-1 nb-button bg-white text-black py-3 rounded-lg cursor-pointer flex flex-col items-center justify-center gap-2">
+                                <i class="fa-solid fa-image text-2xl"></i>
+                                <span class="text-xs font-bold mt-1">Galeri</span>
+                                <input type="file" id="scan-file-gal" accept="image/*" class="hidden" onchange="processScanImage(event)">
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="scan-ui-loading" class="w-full hidden flex flex-col items-center justify-center">
+                        <i class="fa-solid fa-spinner fa-spin text-4xl text-indigo-600 mb-4"></i>
+                        <p class="font-bold animate-pulse">AI sedang menganalisis nota...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        const IS_PREVIEW = true;
+        
+        // PASTE FIREBASE CONFIG ANDA DI SINI
+        const firebaseConfig = {
+          apiKey: "AIzaSyBqfMjDeTGShT-tMDLKt6002Tt7r_1iYpU",
+          authDomain: "jiabank.firebaseapp.com",
+          projectId: "jiabank",
+          storageBucket: "jiabank.firebasestorage.app",
+          messagingSenderId: "975714626287",
+          appId: "1:975714626287:web:9a0d62cf0f45263660491a"
+        };
+        
+        const isImmersive = typeof __app_id !== 'undefined';
+        const activeConfig = isImmersive ? JSON.parse(__firebase_config) : firebaseConfig;
+        const activeAppId = isImmersive ? __app_id : 'jiabank-local';
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const app = initializeApp(activeConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let isPatternUnlocked = false;
+        let appConfig = { recap_day: 25, pattern_hash: "123", currency: "₩" };
+        let allTransactions = []; 
+        let activePeriod = { start: null, end: null, monthLabel: "" };
+        let selectedFilterPeriod = "active";
+        
+        let chartLineInstance = null;
+        let chartPieInstance = null;
+        
+        let hasShownInitAIMessage = false;
+
+        const getBasePath = () => {
+            if (isImmersive) return `artifacts/${activeAppId}/users/${currentUser.uid}`;
+            return `jiabank_users/${currentUser.uid}`; 
+        };
+
+        const el = {
+            authContainer: document.getElementById('auth-container'),
+            loginScreen: document.getElementById('login-screen'),
+            patternScreen: document.getElementById('pattern-screen'),
+            appContainer: document.getElementById('app-container'),
+            navBtns: document.querySelectorAll('.nav-btn, .nav-btn-mob'),
+            sections: document.querySelectorAll('.page-section'),
+            msgBoxOverlay: document.getElementById('msg-box-overlay'),
+            msgBoxTitle: document.getElementById('msg-box-title'),
+            msgBoxText: document.getElementById('msg-box-text'),
+            msgBoxCancel: document.getElementById('msg-box-cancel'),
+            msgBoxOk: document.getElementById('msg-box-ok')
+        };
+
+        window.showMessage = (title, text, isConfirm = false, onConfirm = null) => {
+            el.msgBoxTitle.innerText = title;
+            el.msgBoxText.innerText = text;
+            el.msgBoxOverlay.classList.remove('hidden');
+            
+            if (isConfirm) {
+                el.msgBoxCancel.classList.remove('hidden');
+                el.msgBoxOk.onclick = () => { el.msgBoxOverlay.classList.add('hidden'); if(onConfirm) onConfirm(); };
+                el.msgBoxCancel.onclick = () => el.msgBoxOverlay.classList.add('hidden');
+            } else {
+                el.msgBoxCancel.classList.add('hidden');
+                el.msgBoxOk.onclick = () => el.msgBoxOverlay.classList.add('hidden');
+            }
+        };
+
+        const formatWon = (num) => `₩${parseInt(num).toLocaleString('id-ID')}`;
+        const parseHash = (arr) => arr.join("-");
+
+        const calculatePeriod = (dateObj, recapDay) => {
+            const d = new Date(dateObj);
+            const currentYear = d.getFullYear();
+            const currentMonth = d.getMonth();
+            const currentDate = d.getDate();
+            
+            let start, end;
+            if (currentDate > recapDay) {
+                start = new Date(currentYear, currentMonth, recapDay + 1, 0, 0, 0, 0);
+                end = new Date(currentYear, currentMonth + 1, recapDay, 23, 59, 59, 999);
+            } else {
+                start = new Date(currentYear, currentMonth - 1, recapDay + 1, 0, 0, 0, 0);
+                end = new Date(currentYear, currentMonth, recapDay, 23, 59, 59, 999);
+            }
+            
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+            let label = `${start.getDate()} ${monthNames[start.getMonth()]} - ${end.getDate()} ${monthNames[end.getMonth()]} ${end.getFullYear()}`;
+            
+            return { start, end, label, startTs: start.getTime(), endTs: end.getTime() };
+        };
+
+        const updateActivePeriod = () => {
+            activePeriod = calculatePeriod(new Date(), appConfig.recap_day);
+            document.getElementById('dash-period-info').innerText = `Periode Aktif: ${activePeriod.label}`;
+            generateFilterOptions();
+        };
+
+        const autoSetupDatabase = async () => {
+            const configRef = doc(db, `${getBasePath()}/config/user_settings`);
+            try {
+                const docSnap = await getDoc(configRef);
+                if (!docSnap.exists()) {
+                    await setDoc(configRef, { recap_day: 25, pattern_hash: "0-1-2", currency: "₩", created_at: Date.now() });
+                    const txRef = collection(db, `${getBasePath()}/transactions`);
+                    const now = new Date();
+                    const dummyData = [
+                        { type: 'income', title: 'Saldo Awal / Gaji', amount: 3000000, date: now.getTime() - (86400000 * 2), note: 'Auto Setup' },
+                        { type: 'expense', title: 'Makan Siang', amount: 15000, date: now.getTime() - 86400000, note: 'Di restoran korea' },
+                        { type: 'expense', title: 'Beli Kopi', amount: 5000, date: now.getTime(), note: 'Kopi susu' }
+                    ];
+                    for (let data of dummyData) {
+                        data.created_at = Date.now();
+                        await addDoc(txRef, data);
+                    }
+                }
+            } catch (e) { console.error("Error auto setup:", e); }
+        };
+
+        const loadUserData = async () => {
+            const configRef = doc(db, `${getBasePath()}/config/user_settings`);
+            const txCollection = collection(db, `${getBasePath()}/transactions`);
+            
+            onSnapshot(configRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    appConfig = docSnap.data();
+                    document.getElementById('setting-recap-day').value = appConfig.recap_day;
+                    updateActivePeriod();
+                    processDataForUI();
+                }
+            }, (error) => console.error("Error fetching config:", error));
+
+            onSnapshot(txCollection, (snapshot) => {
+                allTransactions = [];
+                snapshot.forEach((doc) => {
+                    let data = doc.data();
+                    data.id = doc.id;
+                    allTransactions.push(data);
+                });
+                
+                // MENGURUTKAN TRANSAKSI: Terbaru Berdasarkan Tanggal lalu Waktu Pembuatan
+                allTransactions.sort((a, b) => {
+                    if (b.date === a.date) {
+                        return (b.created_at || 0) - (a.created_at || 0); // Jika tanggal sama, prioritas jam/input terbaru
+                    }
+                    return b.date - a.date; // Tanggal terbaru di atas
+                });
+                
+                processDataForUI();
+            }, (error) => console.error("Error fetching tx:", error));
+        };
+
+        const processDataForUI = () => {
+            if(!isPatternUnlocked) return;
+
+            let periodIncome = 0;
+            let periodExpense = 0;
+            let totalIncomeEver = 0;
+            let totalExpenseEver = 0;
+            
+            let chartDates = {};
+            let expenseCategories = {};
+            
+            const pStart = activePeriod.startTs;
+            const pEnd = activePeriod.endTs;
+
+            allTransactions.forEach(tx => {
+                if(tx.date <= new Date().getTime()) {
+                    if (tx.type === 'income') totalIncomeEver += Number(tx.amount);
+                    if (tx.type === 'expense') totalExpenseEver += Number(tx.amount);
+                }
+
+                if (tx.date >= pStart && tx.date <= pEnd) {
+                    if (tx.type === 'income') {
+                        periodIncome += Number(tx.amount);
+                    } else {
+                        periodExpense += Number(tx.amount);
+                        const titleLower = tx.title.toLowerCase().trim();
+                        let category = "Lainnya";
+                        if(titleLower.includes("makan") || titleLower.includes("minum") || titleLower.includes("food") || titleLower.includes("kopi")) category = "Makanan";
+                        else if(titleLower.includes("transport") || titleLower.includes("bensin") || titleLower.includes("gojek")) category = "Transportasi";
+                        else if(titleLower.includes("belanja") || titleLower.includes("shop")) category = "Belanja";
+                        else if(titleLower.includes("tagihan") || titleLower.includes("listrik") || titleLower.includes("internet")) category = "Tagihan";
+                        
+                        expenseCategories[category] = (expenseCategories[category] || 0) + Number(tx.amount);
+                    }
+                    
+                    const dateStr = new Date(tx.date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'});
+                    if(!chartDates[dateStr]) chartDates[dateStr] = { income: 0, expense: 0 };
+                    chartDates[dateStr][tx.type] += Number(tx.amount);
+                }
+            });
+
+            const currentSaldo = totalIncomeEver - totalExpenseEver;
+            document.getElementById('dash-saldo').innerText = formatWon(currentSaldo);
+            document.getElementById('dash-income').innerText = formatWon(periodIncome);
+            document.getElementById('dash-expense').innerText = formatWon(periodExpense);
+
+            renderRecentList(allTransactions.slice(0, 5));
+            renderHistoryList();
+            renderCharts(chartDates, expenseCategories);
+
+            // Memicu sapaan awal AI jika belum ditampilkan di sesi ini
+            if (!hasShownInitAIMessage && isPatternUnlocked) {
+                hasShownInitAIMessage = true;
+                generateAIInsight('init', { balance: currentSaldo, periodIncome, periodExpense });
+            }
+        };
+
+        const renderRecentList = (txs) => {
+            const container = document.getElementById('dash-recent-list');
+            if (txs.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 text-sm text-center py-4">Belum ada transaksi.</p>`;
+                return;
+            }
+            container.innerHTML = txs.map(tx => `
+                <div class="flex justify-between items-center p-3 rounded-lg bg-gray-50 border border-gray-100 hover:border-gray-300 transition cursor-pointer" onclick="openDetailModal('${tx.id}')">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${tx.type === 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'}">
+                            <i class="fa-solid ${tx.type === 'income' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                        </div>
+                        <div class="truncate">
+                            <p class="font-bold text-sm truncate">${tx.title}</p>
+                            <p class="text-xs text-gray-500">${new Date(tx.date).toLocaleDateString('id-ID')}</p>
+                        </div>
+                    </div>
+                    <div class="font-bold ${tx.type === 'income' ? 'text-emerald-600' : 'text-red-500'}">
+                        ${tx.type === 'income' ? '+' : '-'}${formatWon(tx.amount)}
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        const generateFilterOptions = () => {
+            const select = document.getElementById('filter-period');
+            select.innerHTML = `<option value="active">Periode Aktif (${activePeriod.label})</option><option value="all">Semua Waktu</option>`;
+            
+            for(let i=1; i<=3; i++) {
+                let d = new Date(activePeriod.startTs);
+                d.setMonth(d.getMonth() - i);
+                let p = calculatePeriod(d, appConfig.recap_day);
+                select.innerHTML += `<option value="${p.startTs}|${p.endTs}">${p.label}</option>`;
+            }
+        };
+
+        const renderHistoryList = () => {
+            const container = document.getElementById('history-list');
+            const searchVal = document.getElementById('search-history').value.toLowerCase();
+            const filterVal = document.getElementById('filter-period').value;
+            
+            let filtered = allTransactions;
+            
+            if (filterVal === 'active') {
+                filtered = filtered.filter(tx => tx.date >= activePeriod.startTs && tx.date <= activePeriod.endTs);
+            } else if (filterVal !== 'all') {
+                const [fStart, fEnd] = filterVal.split('|').map(Number);
+                filtered = filtered.filter(tx => tx.date >= fStart && tx.date <= fEnd);
+            }
+
+            if (searchVal) {
+                filtered = filtered.filter(tx => tx.title.toLowerCase().includes(searchVal) || (tx.note && tx.note.toLowerCase().includes(searchVal)));
+            }
+
+            let sIn = 0, sOut = 0;
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 text-sm text-center py-10">Tidak ada transaksi ditemukan.</p>`;
+                document.getElementById('hist-summary-income').innerText = `Total Masuk: ₩0`;
+                document.getElementById('hist-summary-expense').innerText = `Total Keluar: ₩0`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(tx => {
+                if(tx.type === 'income') sIn += Number(tx.amount); else sOut += Number(tx.amount);
+                return `
+                <div class="flex justify-between items-center p-3 rounded-lg bg-white border-2 border-transparent border-b-gray-100 hover:border-black hover:shadow-[2px_2px_0px_#1e1e1e] transition cursor-pointer" onclick="openDetailModal('${tx.id}')">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${tx.type === 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'}">
+                            <i class="fa-solid ${tx.type === 'income' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                        </div>
+                        <div class="truncate">
+                            <p class="font-bold text-sm truncate">${tx.title}</p>
+                            <p class="text-xs text-gray-500">${new Date(tx.date).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <span class="font-bold ${tx.type === 'income' ? 'text-emerald-600' : 'text-red-500'}">
+                            ${tx.type === 'income' ? '+' : '-'}${formatWon(tx.amount)}
+                        </span>
+                        ${tx.receipt_url ? '<i class="fa-solid fa-paperclip text-gray-400 text-xs"></i>' : ''}
+                    </div>
+                </div>
+            `}).join('');
+            
+            document.getElementById('hist-summary-income').innerText = `Total Masuk: ${formatWon(sIn)}`;
+            document.getElementById('hist-summary-expense').innerText = `Total Keluar: ${formatWon(sOut)}`;
+        };
+        
+        document.getElementById('search-history').addEventListener('input', renderHistoryList);
+        document.getElementById('filter-period').addEventListener('change', renderHistoryList);
+
+        const renderCharts = (dateMap, catMap) => {
+            const sortedDates = Object.keys(dateMap).sort((a,b) => new Date(a) - new Date(b));
+            const inData = sortedDates.map(d => dateMap[d].income);
+            const outData = sortedDates.map(d => dateMap[d].expense);
+
+            const ctxLine = document.getElementById('chartLine').getContext('2d');
+            if (chartLineInstance) chartLineInstance.destroy();
+            chartLineInstance = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [
+                        { label: 'Pemasukan', data: inData, borderColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 0 },
+                        { label: 'Pengeluaran', data: outData, borderColor: '#ef4444', tension: 0.3, borderWidth: 2, pointRadius: 0 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
+            });
+
+            const ctxPie = document.getElementById('chartPie').getContext('2d');
+            if (chartPieInstance) chartPieInstance.destroy();
+            const catLabels = Object.keys(catMap);
+            const catData = Object.values(catMap);
+            
+            if(catData.length === 0) {
+                chartPieInstance = new Chart(ctxPie, { type: 'doughnut', data: { labels: ['Kosong'], datasets: [{ data: [1], backgroundColor: ['#f3f4f6'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}} }});
+            } else {
+                chartPieInstance = new Chart(ctxPie, {
+                    type: 'doughnut',
+                    data: {
+                        labels: catLabels,
+                        datasets: [{ data: catData, backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#1e1e1e'], borderWidth: 2, borderColor: '#ffffff' }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '60%' }
+                });
+            }
+        };
+
+        window.navigate = (targetId) => {
+            el.sections.forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(`sec-${targetId}`).classList.remove('hidden');
+            
+            el.navBtns.forEach(btn => {
+                if(btn.dataset.target === targetId) {
+                    btn.classList.add(btn.classList.contains('nav-btn-mob') ? 'text-indigo-600' : 'bg-gray-100');
+                    if(btn.classList.contains('nav-btn')) btn.classList.add('border-black');
+                } else {
+                    btn.classList.remove('text-indigo-600', 'bg-gray-100', 'border-black');
+                }
+            });
+            if(targetId === 'dashboard') { setTimeout(() => processDataForUI(), 50); }
+        };
+
+        window.openNewTransactionModal = () => {
+            resetTxForm();
+            openTransactionModal();
+        };
+
+        window.openTransactionModal = () => {
+            const modal = document.getElementById('modal-transaction');
+            const content = document.getElementById('modal-tx-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => { content.classList.remove('translate-y-full'); }, 10);
+        };
+        
+        window.closeTransactionModal = () => {
+            const modal = document.getElementById('modal-transaction');
+            const content = document.getElementById('modal-tx-content');
+            content.classList.add('translate-y-full');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        document.querySelectorAll('.tx-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tx-tab-btn').forEach(b => {
+                    b.classList.remove('border-indigo-600', 'text-indigo-600');
+                    b.classList.add('border-transparent', 'text-gray-500');
+                });
+                const target = e.currentTarget;
+                target.classList.add('border-indigo-600', 'text-indigo-600');
+                target.classList.remove('border-transparent', 'text-gray-500');
+                
+                document.querySelectorAll('.tx-tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(`tx-tab-${target.dataset.tab}`).classList.remove('hidden');
+                document.getElementById(`tx-tab-${target.dataset.tab}`).classList.add('block');
+            });
+        });
+
+        window.setTxType = (type) => {
+            document.getElementById('tx-type').value = type;
+            const btnExp = document.getElementById('btn-type-expense');
+            const btnInc = document.getElementById('btn-type-income');
+            if(type === 'expense') {
+                btnExp.className = "flex-1 py-2 rounded font-bold text-white bg-red-500 transition shadow-sm border border-black";
+                btnInc.className = "flex-1 py-2 rounded font-bold text-gray-500 bg-transparent transition";
+            } else {
+                btnInc.className = "flex-1 py-2 rounded font-bold text-white bg-emerald-500 transition shadow-sm border border-black";
+                btnExp.className = "flex-1 py-2 rounded font-bold text-gray-500 bg-transparent transition";
+            }
+        };
+
+        const resetTxForm = () => {
+            document.getElementById('tx-id').value = "";
+            document.getElementById('tx-date').valueAsDate = new Date();
+            document.getElementById('tx-title').value = "";
+            document.getElementById('tx-amount').value = "";
+            document.getElementById('tx-note').value = "";
+            document.getElementById('tx-file').value = "";
+            document.getElementById('tx-preview-img').classList.add('hidden');
+            document.getElementById('tx-preview-img').src = "";
+            document.getElementById('tx-modal-title').innerText = "Catat Transaksi";
+            setTxType('expense');
+            
+            document.getElementById('scan-ui-initial').classList.remove('hidden');
+            document.getElementById('scan-ui-loading').classList.add('hidden');
+            document.getElementById('voice-result-box').classList.add('hidden');
+            isRecording = false;
+        };
+
+        document.getElementById('tx-file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('tx-preview-img').src = event.target.result;
+                    document.getElementById('tx-preview-img').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        window.saveTransactionManual = async () => {
+            const id = document.getElementById('tx-id').value;
+            const type = document.getElementById('tx-type').value;
+            const dateStr = document.getElementById('tx-date').value;
+            const title = document.getElementById('tx-title').value;
+            const amount = document.getElementById('tx-amount').value;
+            const note = document.getElementById('tx-note').value;
+            const imgBase64 = document.getElementById('tx-preview-img').src;
+
+            if(!dateStr || !title || !amount) {
+                showMessage("Gagal", "Tanggal, Nama, dan Nominal wajib diisi!");
+                return;
+            }
+
+            const dateObj = new Date(dateStr);
+            dateObj.setHours(12, 0, 0, 0); 
+            
+            const btn = document.getElementById('btn-save-tx');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+            btn.disabled = true;
+
+            const txData = {
+                type,
+                title,
+                amount: Number(amount),
+                date: dateObj.getTime(),
+                note,
+                receipt_url: imgBase64.startsWith('data:') ? imgBase64 : null
+            };
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, `${getBasePath()}/transactions/${id}`), txData);
+                    showMessage("Sukses", "Transaksi berhasil diperbarui!");
+                } else {
+                    txData.created_at = Date.now();
+                    await addDoc(collection(db, `${getBasePath()}/transactions`), txData);
+                    showMessage("Sukses", "Transaksi berhasil ditambahkan!");
+                    generateAIInsight('post_tx', txData); // Pemicu AI setelah input manual
+                }
+                closeTransactionModal();
+            } catch (e) {
+                console.error("Error save:", e);
+                showMessage("Error", "Gagal menyimpan data.");
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Transaksi`;
+                btn.disabled = false;
+            }
+        };
+
+        window.openDetailModal = (id) => {
+            const tx = allTransactions.find(t => t.id === id);
+            if(!tx) return;
+            
+            document.querySelector('.tx-tab-btn[data-tab="manual"]').click();
+            
+            document.getElementById('tx-id').value = tx.id;
+            document.getElementById('tx-modal-title').innerText = "Edit Transaksi";
+            
+            const d = new Date(tx.date);
+            const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            document.getElementById('tx-date').value = dateStr;
+            
+            document.getElementById('tx-title').value = tx.title;
+            document.getElementById('tx-amount').value = tx.amount;
+            document.getElementById('tx-note').value = tx.note || "";
+            setTxType(tx.type);
+            
+            if(tx.receipt_url) {
+                document.getElementById('tx-preview-img').src = tx.receipt_url;
+                document.getElementById('tx-preview-img').classList.remove('hidden');
+            } else {
+                document.getElementById('tx-preview-img').src = "";
+                document.getElementById('tx-preview-img').classList.add('hidden');
+            }
+            
+            openTransactionModal();
+            
+            if(!document.getElementById('btn-delete-tx')) {
+                const delBtn = document.createElement('button');
+                delBtn.id = 'btn-delete-tx';
+                delBtn.className = 'w-full mt-2 nb-button bg-red-100 text-red-600 border-red-200 py-3 rounded-lg font-bold';
+                delBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Hapus Transaksi';
+                delBtn.onclick = () => deleteTransaction(tx.id);
+                document.getElementById('tx-tab-manual').appendChild(delBtn);
+            }
+        };
+        
+        document.getElementById('modal-transaction').addEventListener('click', (e) => {
+            if(e.target.id === 'modal-transaction') closeTransactionModal();
+        });
+        const observerModal = new MutationObserver(() => {
+            if(document.getElementById('modal-transaction').classList.contains('hidden')) {
+                const delBtn = document.getElementById('btn-delete-tx');
+                if(delBtn) delBtn.remove();
+            }
+        });
+        observerModal.observe(document.getElementById('modal-transaction'), {attributes: true});
+
+        window.deleteTransaction = (id) => {
+            showMessage("Konfirmasi", "Yakin ingin menghapus transaksi ini?", true, async () => {
+                try {
+                    await deleteDoc(doc(db, `${getBasePath()}/transactions/${id}`));
+                    closeTransactionModal();
+                } catch(e) {
+                    showMessage("Error", "Gagal menghapus data.");
+                }
+            });
+        };
+
+        let isRecording = false;
+        let recognition = null;
+        
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'id-ID';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onresult = async (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('voice-transcript').innerText = transcript;
+                stopVoiceRecord();
+                
+                const textLower = transcript.toLowerCase();
+                let type = 'expense';
+                if(textLower.includes('pemasukan') || textLower.includes('dapat') || textLower.includes('masuk')) type = 'income';
+                
+                const numbers = transcript.match(/\d+/g);
+                let amount = 0;
+                if(numbers) {
+                    amount = Number(numbers.join(''));
+                }
+                
+                // MENGHAPUS TITIK DARI JUDUL VOICE INPUT
+                let title = transcript.replace(/(pemasukan|pengeluaran|rupiah|rp|won|ribu|juta|\d+)/gi, '').trim();
+                title = title.replace(/\./g, '').trim();
+                if(!title) title = "Voice Input";
+
+                if(amount > 0) {
+                    let cleanTranscript = transcript.replace(/rp/gi, '').trim();
+                    document.getElementById('voice-transcript').innerText += " \n[Menyimpan otomatis...]";
+                    const txData = {
+                        type, title, amount, date: Date.now(), note: "Hasil Voice: " + cleanTranscript, created_at: Date.now()
+                    };
+                    try {
+                        await addDoc(collection(db, `${getBasePath()}/transactions`), txData);
+                        setTimeout(() => { closeTransactionModal(); }, 1000);
+                        generateAIInsight('post_tx', txData); // Pemicu AI setelah voice
+                    } catch(e) {
+                        showMessage("Error", "Gagal menyimpan voice.");
+                    }
+                } else {
+                    document.getElementById('voice-transcript').innerText += " \n[Gagal mendeteksi nominal. Silakan coba lagi.]";
+                }
+            };
+            
+            recognition.onerror = (e) => {
+                document.getElementById('voice-transcript').innerText = "Gagal mendeteksi suara: " + e.error;
+                stopVoiceRecord();
+            };
+        }
+
+        window.toggleVoiceRecord = () => {
+            if(!recognition) { showMessage("Error", "Browser tidak mendukung fitur suara."); return; }
+            if(isRecording) {
+                stopVoiceRecord();
+            } else {
+                document.getElementById('voice-result-box').classList.remove('hidden');
+                document.getElementById('voice-transcript').innerText = "Mendengarkan...";
+                document.getElementById('voice-ripple').classList.remove('hidden');
+                recognition.start();
+                isRecording = true;
+            }
+        };
+        const stopVoiceRecord = () => {
+            if(recognition) recognition.stop();
+            document.getElementById('voice-ripple').classList.add('hidden');
+            isRecording = false;
+        };
+
+        window.processScanImage = async (event) => {
+            const file = event.target.files[0];
+            if(!file) return;
+            
+            const apiKey = localStorage.getItem('jiabank_gemini_key');
+            if(!apiKey) {
+                showMessage("Peringatan", "Harap masukkan Gemini API Key di menu Pengaturan terlebih dahulu.");
+                return;
+            }
+
+            document.getElementById('scan-ui-initial').classList.add('hidden');
+            document.getElementById('scan-ui-loading').classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64Data = e.target.result.split(',')[1];
+                
+                // UPDATE: Menggunakan model terbaru (2.5-flash) yang valid dan cepat
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{
+                        parts: [
+                            { text: "Ekstrak data dari nota ini. Kembalikan HANYA JSON mentah (tanpa markdown block) dengan format: {\"title\": \"nama merchant/toko\", \"amount\": angka_total_nominal_tanpa_simbol, \"date\": \"YYYY-MM-DD\"}. Jika tanggal tidak jelas, kosongi string date." },
+                            { inlineData: { mimeType: file.type, data: base64Data } }
+                        ]
+                    }]
+                };
+
+                try {
+                    const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const result = await res.json();
+                    
+                    if (!res.ok) {
+                        throw new Error(result.error?.message || "API Error");
+                    }
+                    
+                    if(result.candidates && result.candidates[0].content) {
+                        const jsonText = result.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+                        const data = JSON.parse(jsonText);
+                        
+                        let txDate = Date.now();
+                        if(data.date && data.date !== "") {
+                            txDate = new Date(data.date).getTime();
+                            if(isNaN(txDate)) txDate = Date.now(); 
+                        }
+
+                        const txData = {
+                            type: 'expense',
+                            title: data.title || "Scan Nota",
+                            amount: Number(data.amount) || 0,
+                            date: txDate,
+                            note: "Hasil Scan AI",
+                            receipt_url: e.target.result,
+                            created_at: Date.now()
+                        };
+                        
+                        await addDoc(collection(db, `${getBasePath()}/transactions`), txData);
+                        closeTransactionModal();
+                        showMessage("Sukses", `Nota ${data.title} senilai ${formatWon(data.amount)} berhasil dicatat!`);
+                        generateAIInsight('post_tx', txData); // Pemicu AI setelah scan
+                    } else {
+                        throw new Error("Format balasan AI tidak sesuai.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showMessage("Error AI", "Gagal memproses nota: " + err.message);
+                    resetTxForm(); 
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // INTEGRASI KLIK TOMBOL PENYESUAIAN DARI AI BUBBLE
+        document.getElementById('chat-box').addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-ai-adjust');
+            if (btn) {
+                const newBalance = parseInt(btn.dataset.amount);
+                if (isNaN(newBalance)) return;
+
+                showMessage("Konfirmasi Penyesuaian AI", `Yakin ingin menyesuaikan total saldo saat ini menjadi ${formatWon(newBalance)}? AI akan membuat riwayat penyesuaian otomatis.`, true, async () => {
+                    let totalIn = 0, totalOut = 0;
+                    allTransactions.forEach(tx => {
+                        if(tx.date <= new Date().getTime()) {
+                            if (tx.type === 'income') totalIn += Number(tx.amount);
+                            if (tx.type === 'expense') totalOut += Number(tx.amount);
+                        }
+                    });
+                    
+                    const currentBal = totalIn - totalOut;
+                    const diff = newBalance - currentBal;
+
+                    if(diff === 0) {
+                        showMessage("Info", "Saldo saat ini sudah sesuai dengan permintaan Anda.");
+                        return;
+                    }
+
+                    const txData = {
+                        type: diff > 0 ? 'income' : 'expense',
+                        title: 'Penyesuaian Saldo AI',
+                        amount: Math.abs(diff),
+                        date: Date.now(),
+                        note: `Penyesuaian otomatis AI. Saldo sebelumnya: ${formatWon(currentBal)}`,
+                        created_at: Date.now()
+                    };
+
+                    try {
+                        await addDoc(collection(db, `${getBasePath()}/transactions`), txData);
+                        showMessage("Sukses", `Sistem berhasil menyesuaikan saldo menjadi ${formatWon(newBalance)}.`);
+                    } catch(err) {
+                        showMessage("Error", "Gagal melakukan penyesuaian saldo.");
+                    }
+                });
+            }
+        });
+
+        document.getElementById('btn-ai-send').addEventListener('click', async () => {
+            const inputEl = document.getElementById('ai-input');
+            const userText = inputEl.value.trim();
+            if(!userText) return;
+
+            const apiKey = localStorage.getItem('jiabank_gemini_key');
+            if(!apiKey) {
+                showMessage("Peringatan", "Harap masukkan Gemini API Key di menu Pengaturan terlebih dahulu.");
+                return;
+            }
+
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="flex flex-col gap-1 max-w-[85%] self-start"><div class="chat-bubble-user p-3 px-4 shadow-sm text-sm md:text-base">${userText}</div></div>`;
+            inputEl.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            let summaryTxt = `Info User: Saldo total = ${document.getElementById('dash-saldo').innerText}. Pemasukan bulan ini = ${document.getElementById('dash-income').innerText}, Pengeluaran = ${document.getElementById('dash-expense').innerText}. `;
+            summaryTxt += `5 Transaksi terbaru (ID | Tipe | Nama | Nominal | Tanggal): `;
+            const recent = allTransactions.slice(0, 5);
+            recent.forEach(t => summaryTxt += `[${t.type}, ${t.title}, ${t.amount}, ${new Date(t.date).toLocaleDateString()}] `);
+
+            // INSTRUKSI KHUSUS UNTUK MEMICU TOMBOL PENYESUAIAN SALDO
+            const prompt = `Anda adalah Jia, Asisten Keuangan JiaBank. Mata uang adalah Won (₩). Jawablah pertanyaan berdasarkan data ini: ${summaryTxt}. Berikan saran logis tanpa basa-basi berlebih. 
+            PENTING: Jika pengguna secara eksplisit meminta atau memerintahkan untuk mengubah, menyetel, atau mensinkronisasi sisa keuangan/total saldo menjadi angka nominal tertentu (misal: "ubah saldo saya jadi 50000"), Anda WAJIB memberikan jawaban natural dan menyisipkan KODE HTML INI persis di akhir baris jawaban Anda: 
+            <br><button class="btn-ai-adjust nb-button bg-indigo-600 text-white px-3 py-2 mt-3 rounded-lg font-bold text-sm w-full shadow-sm" data-amount="[ANGKA_NOMINAL_TUJUAN_TANPA_SIMBOL_ATAU_TITIK]">Klik untuk Sesuaikan Saldo Jadi [ANGKA_NOMINAL_TUJUAN]</button>
+            Pertanyaan User: ${userText}`;
+
+            const typingId = 'typing-' + Date.now();
+            chatBox.innerHTML += `<div id="${typingId}" class="flex flex-col gap-1 max-w-[85%] self-start"><div class="chat-bubble-ai p-3 px-4 shadow-sm text-sm"><i class="fa-solid fa-ellipsis fa-beat"></i> Memproses...</div></div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                // UPDATE: Menggunakan model terbaru (2.5-flash) yang valid dan cepat
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: "Jawab dengan format HTML ringan (seperti <br>, <b>) agar mudah dibaca di bubble chat. Jangan gunakan format markdown **." }] }
+                    })
+                });
+                const result = await res.json();
+                
+                if (!res.ok) {
+                    throw new Error(result.error?.message || "Server error");
+                }
+                
+                const aiResp = result.candidates[0].content.parts[0].text;
+                
+                document.getElementById(typingId).innerHTML = `<div class="chat-bubble-ai p-3 px-4 shadow-sm text-sm md:text-base leading-relaxed">${aiResp}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch(e) {
+                document.getElementById(typingId).innerHTML = `<div class="bg-red-100 text-red-600 p-3 px-4 shadow-sm text-sm border border-red-200 border-bottom-left-radius-0 rounded-lg"><b>Koneksi AI Gagal:</b><br>${e.message}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        });
+
+        document.getElementById('btn-save-recap').addEventListener('click', async () => {
+            const newVal = parseInt(document.getElementById('setting-recap-day').value);
+            if(newVal > 0 && newVal <= 28) {
+                try {
+                    await updateDoc(doc(db, `${getBasePath()}/config/user_settings`), { recap_day: newVal });
+                    showMessage("Sukses", "Tanggal rekap berhasil diubah.");
+                } catch(e) { showMessage("Error", "Gagal menyimpan."); }
+            } else {
+                showMessage("Peringatan", "Tanggal rekap harus antara 1-28.");
+            }
+        });
+
+        document.getElementById('btn-save-gemini').addEventListener('click', () => {
+            const key = document.getElementById('setting-gemini-key').value.trim();
+            localStorage.setItem('jiabank_gemini_key', key);
+            showMessage("Sukses", "API Key disimpan di memori lokal.");
+            document.getElementById('setting-gemini-key').value = ""; 
+        });
+
+        if(localStorage.getItem('jiabank_gemini_key')) {
+            document.getElementById('setting-gemini-key').placeholder = "Key tersimpan (••••••••)";
+        }
+
+        // ==========================================
+        // FUNGSI JIA AI INSIGHT BANNER (DASHBOARD)
+        // ==========================================
+        const updateAIBannerUI = (message, isLoading = false) => {
+            const banner = document.getElementById('dash-ai-banner');
+            const msgEl = document.getElementById('dash-ai-message');
+            const iconEl = document.getElementById('dash-ai-icon');
+            
+            banner.classList.remove('hidden');
+            banner.classList.add('flex');
+            
+            if(isLoading) {
+                msgEl.innerHTML = `<span class="animate-pulse">Jia sedang memikirkan insight untukmu...</span>`;
+                iconEl.classList.add('fa-beat');
+            } else {
+                msgEl.innerHTML = message;
+                iconEl.classList.remove('fa-beat');
+                
+                // Menambahkan efek highlight sebentar
+                banner.classList.add('border-indigo-500', 'bg-indigo-100');
+                setTimeout(() => {
+                    banner.classList.remove('border-indigo-500', 'bg-indigo-100');
+                }, 2000);
+            }
+        };
+
+        const generateAIInsight = async (triggerType, data) => {
+            // --- PEMBATASAN 2 KALI SEHARI ---
+            const todayStr = new Date().toDateString();
+            let storedData = localStorage.getItem('jiabank_ai_daily');
+            let dailyTracker = storedData ? JSON.parse(storedData) : { date: '', count: 0 };
+
+            if (dailyTracker.date !== todayStr) {
+                dailyTracker = { date: todayStr, count: 0 }; // Reset otomatis jika beda hari
+            }
+
+            if (dailyTracker.count >= 2) {
+                return; // Batalkan proses dan hentikan banner jika sudah 2 kali hari ini
+            }
+            // --------------------------------
+
+            const apiKey = localStorage.getItem('jiabank_gemini_key');
+            updateAIBannerUI("", true); // Set loading state
+
+            // Tentukan Waktu Saat Ini
+            const now = new Date();
+
+            // Hitung Ulang Konteks Keuangan Terkini secara Global
+            let totalIn = 0, totalOut = 0;
+            let periodIn = 0, periodOut = 0;
+            const pStart = activePeriod.startTs;
+            const pEnd = activePeriod.endTs;
+            const todayStart = new Date(new Date().setHours(0,0,0,0)).getTime();
+            let todayExpense = 0;
+            let yesterdayExpense = 0;
+            const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+            const yStart = new Date(yesterday.setHours(0,0,0,0)).getTime();
+            const yEnd = new Date(yesterday.setHours(23,59,59,999)).getTime();
+
+            allTransactions.forEach(tx => {
+                if(tx.date <= Date.now()) {
+                    if (tx.type === 'income') totalIn += tx.amount;
+                    if (tx.type === 'expense') totalOut += tx.amount;
+                }
+                if (tx.date >= pStart && tx.date <= pEnd) {
+                    if (tx.type === 'income') periodIn += tx.amount;
+                    if (tx.type === 'expense') periodOut += tx.amount;
+                }
+                if (tx.type === 'expense' && tx.date >= todayStart) todayExpense += tx.amount;
+                if (tx.type === 'expense' && tx.date >= yStart && tx.date <= yEnd) yesterdayExpense += tx.amount;
+            });
+            const currentBalance = totalIn - totalOut;
+
+            // KONDISI BOROS: Pengeluaran >= 80% dari pemasukan, ATAU pengeluaran hari ini saja > 200.000
+            const isBoros = (periodIn > 0 && periodOut >= periodIn * 0.8) || (todayExpense >= 200000);
+
+            // Fallback Offline/Tanpa API Key
+            if(!apiKey) {
+                setTimeout(() => {
+                    let msg = "";
+                    if(isBoros) {
+                        msg = `🚨 Pengeluaranmu sudah sangat tinggi! Segera rem belanja agar tidak defisit di akhir bulan. 🛑`;
+                    } else if(triggerType === 'init') {
+                        msg = `💡 Saldo kamu saat ini ${formatWon(currentBalance)}. Pastikan setiap pengeluaran hari ini tercatat dengan akurat.`;
+                    } else if (triggerType === 'post_tx') {
+                        msg = `✅ Transaksi dicatat. Selalu utamakan kebutuhan pokok dibanding keinginan sesaat.`;
+                    }
+                    
+                    if(msg) {
+                        updateAIBannerUI(msg);
+                        // Tambah hitungan harian setelah banner muncul
+                        dailyTracker.count++;
+                        localStorage.setItem('jiabank_ai_daily', JSON.stringify(dailyTracker));
+                    }
+                }, 1000);
+                return;
+            }
+
+            // Menyusun Prompt
+            let prompt = "";
+            let systemInstruction = "Kamu adalah asisten analis keuangan. Jawab LANGSUNG ke inti pembahasan dengan analisa atau nasihat. DILARANG KERAS menggunakan sapaan (seperti Halo, Selamat Pagi, dll). Gunakan emoji. Jawab MAKSIMAL 2 kalimat pendek.";
+
+            if (triggerType === 'init') {
+                const isNewPeriod = (now.getDate() === (appConfig.recap_day + 1)) || (now.getDate() === 1 && appConfig.recap_day >= 28);
+                let contextStr = `Saldo total saat ini: ${formatWon(currentBalance)}. Pengeluaran kemarin: ${formatWon(yesterdayExpense)}. `;
+                if(isNewPeriod) contextStr += "Ini adalah hari awal bulan/periode rekap baru. ";
+                
+                prompt = `${contextStr} Berikan 1-2 kalimat analisis atau evaluasi keuangan singkat berdasarkan data tersebut tanpa basa-basi/sapaan sama sekali.`;
+            
+            } else if (triggerType === 'post_tx') {
+                const isBigNonEssential = (data.type === 'expense' && data.amount > 50000 && !data.title.toLowerCase().match(/(makan|minum|beras|listrik|tagihan|bensin|air)/));
+                
+                prompt = `User baru input: [${data.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}, Nama: "${data.title}", Nominal: ${formatWon(data.amount)}]. `;
+                prompt += `Berikan komentar analisis singkat. DILARANG memberikan sapaan. `;
+                if(isBigNonEssential) {
+                    prompt += `Ini pengeluaran di atas 50.000 Won dan mungkin non-esensial, berikan peringatan atau nasihat halus untuk mengerem pengeluaran.`;
+                } else if (data.type === 'income') {
+                    prompt += `Berikan motivasi efisien untuk menabung.`;
+                }
+            }
+
+            // SUNTIKKAN INSTRUKSI PERINGATAN BOROS JIKA KONDISI TERPENUHI (Menimpa respons biasa)
+            if (isBoros && triggerType !== 'post_tx' || (isBoros && triggerType === 'post_tx' && data.type === 'expense')) {
+                prompt += ` PENTING: Pengeluaran periode ini (${formatWon(periodOut)}) sudah mencapai batas krisis mendekati/melebihi pemasukan (${formatWon(periodIn)}), ATAU pengeluaran hari ini sangat besar (${formatWon(todayExpense)}). ANDA WAJIB MENEGUR user karena sedang "TERLALU BOROS". Gunakan ekspresi panik/khawatir (🚨, 😱, 🛑) dan perintahkan user untuk segera mengerem pengeluaran sekarang juga tanpa kata sapaan!`;
+            }
+
+            try {
+                // UPDATE: Menggunakan model terbaru (2.5-flash) yang valid dan cepat
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: systemInstruction }] }
+                    })
+                });
+                const result = await res.json();
+                
+                if (!res.ok) {
+                    throw new Error(result.error?.message || "API Error");
+                }
+                
+                const aiResp = result.candidates[0].content.parts[0].text;
+                updateAIBannerUI(aiResp);
+                
+                // Tambah hitungan harian setelah sukses memanggil API dan banner muncul
+                dailyTracker.count++;
+                localStorage.setItem('jiabank_ai_daily', JSON.stringify(dailyTracker));
+            } catch(e) {
+                console.error("AI Banner Error:", e.message);
+                updateAIBannerUI(`Ups, Jia kesulitan menyambung ke AI. Detail: ${e.message.substring(0, 40)}...`);
+            }
+        };
+        // ==========================================
+
+        const initPatternGrid = (containerId, svgId, lineId, onComplete) => {
+            const container = document.getElementById(containerId);
+            const linePath = document.getElementById(lineId);
+            container.innerHTML = "";
+            let selectedDots = [];
+            let isDrawing = false;
+            
+            for(let i=0; i<9; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'pattern-dot';
+                dot.dataset.val = i;
+                container.appendChild(dot);
+            }
+
+            const getDotCenter = (dot) => {
+                const rect = dot.getBoundingClientRect();
+                const parentRect = container.getBoundingClientRect();
+                return { x: rect.left - parentRect.left + (rect.width/2), y: rect.top - parentRect.top + (rect.height/2) };
+            };
+
+            const drawLine = () => {
+                if(selectedDots.length === 0) { linePath.setAttribute('points', ''); return; }
+                const points = selectedDots.map(i => {
+                    const d = container.children[i];
+                    const pt = getDotCenter(d);
+                    return `${pt.x},${pt.y}`;
+                });
+                linePath.setAttribute('points', points.join(' '));
+            };
+
+            const touchMoveHandler = (e) => {
+                if(!isDrawing) return;
+                e.preventDefault(); 
+                const touch = e.touches ? e.touches[0] : e;
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if(target && target.classList.contains('pattern-dot') && target.parentElement === container) {
+                    const val = parseInt(target.dataset.val);
+                    if(!selectedDots.includes(val)) {
+                        selectedDots.push(val);
+                        target.classList.add('active');
+                        drawLine();
+                    }
+                }
+            };
+
+            container.addEventListener('mousedown', () => { isDrawing = true; selectedDots = []; Array.from(container.children).forEach(d=>d.classList.remove('active')); drawLine(); });
+            window.addEventListener('mousemove', touchMoveHandler);
+            window.addEventListener('mouseup', () => {
+                if(!isDrawing) return;
+                isDrawing = false;
+                if(selectedDots.length > 0) onComplete(selectedDots);
+            });
+
+            container.addEventListener('touchstart', (e) => { isDrawing = true; selectedDots = []; Array.from(container.children).forEach(d=>d.classList.remove('active')); drawLine(); touchMoveHandler(e); }, {passive: false});
+            window.addEventListener('touchmove', touchMoveHandler, {passive: false});
+            window.addEventListener('touchend', () => {
+                if(!isDrawing) return;
+                isDrawing = false;
+                if(selectedDots.length > 0) onComplete(selectedDots);
+            });
+        };
+
+        initPatternGrid('pattern-grid', 'pattern-svg', 'pattern-line', (dots) => {
+            const hash = parseHash(dots);
+            if (hash === appConfig.pattern_hash) {
+                isPatternUnlocked = true;
+                el.authContainer.classList.add('hidden');
+                el.appContainer.classList.remove('hidden');
+                document.getElementById('pattern-line').setAttribute('points', '');
+                Array.from(document.getElementById('pattern-grid').children).forEach(d=>d.classList.remove('active'));
+                
+                navigate('dashboard');
+                processDataForUI();
+            } else {
+                const title = document.getElementById('pattern-title');
+                title.innerText = "Pola Salah!";
+                title.classList.add('text-red-500', 'animate-pulse');
+                setTimeout(() => {
+                    title.innerText = "Gambar Pola Akses";
+                    title.classList.remove('text-red-500', 'animate-pulse');
+                    document.getElementById('pattern-line').setAttribute('points', '');
+                    Array.from(document.getElementById('pattern-grid').children).forEach(d=>d.classList.remove('active'));
+                }, 1000);
+            }
+        });
+
+        let tempNewPattern = null;
+        document.getElementById('btn-change-pattern').addEventListener('click', () => {
+            document.getElementById('change-pattern-area').classList.remove('hidden');
+            tempNewPattern = null;
+            document.getElementById('new-pattern-instruction').innerText = "Gambar Pola Baru";
+            document.getElementById('btn-confirm-pattern').classList.add('hidden');
+            initPatternGrid('new-pattern-grid', 'new-pattern-svg', 'new-pattern-line', (dots) => {
+                if(dots.length < 3) {
+                    document.getElementById('new-pattern-instruction').innerText = "Minimal 3 titik!";
+                    document.getElementById('new-pattern-instruction').classList.add('text-red-500');
+                    setTimeout(() => { document.getElementById('new-pattern-instruction').classList.remove('text-red-500'); }, 1000);
+                } else {
+                    tempNewPattern = parseHash(dots);
+                    document.getElementById('new-pattern-instruction').innerText = "Pola terekam. Klik Konfirmasi.";
+                    document.getElementById('btn-confirm-pattern').classList.remove('hidden');
+                }
+            });
+        });
+
+        document.getElementById('btn-cancel-pattern').addEventListener('click', () => {
+            document.getElementById('change-pattern-area').classList.add('hidden');
+        });
+
+        document.getElementById('btn-confirm-pattern').addEventListener('click', async () => {
+            if(tempNewPattern) {
+                try {
+                    await updateDoc(doc(db, `${getBasePath()}/config/user_settings`), { pattern_hash: tempNewPattern });
+                    showMessage("Sukses", "Pola password berhasil diubah.");
+                    document.getElementById('change-pattern-area').classList.add('hidden');
+                } catch(e) { showMessage("Error", "Gagal menyimpan pola."); }
+            }
+        });
+
+        window.lockApp = () => {
+            isPatternUnlocked = false;
+            el.appContainer.classList.add('hidden');
+            el.authContainer.classList.remove('hidden');
+            el.patternScreen.classList.remove('hidden');
+            el.loginScreen.classList.add('hidden');
+        };
+
+        const initAppFlow = () => {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    el.loginScreen.classList.add('hidden');
+                    
+                    await autoSetupDatabase();
+                    await loadUserData();
+
+                    if (!isPatternUnlocked) {
+                        el.patternScreen.classList.remove('hidden');
+                    } else {
+                        el.authContainer.classList.add('hidden');
+                        el.appContainer.classList.remove('hidden');
+                    }
+                } else {
+                    currentUser = null;
+                    isPatternUnlocked = false;
+                    el.authContainer.classList.remove('hidden');
+                    el.loginScreen.classList.remove('hidden');
+                    el.patternScreen.classList.add('hidden');
+                    el.appContainer.classList.add('hidden');
+                }
+            });
+        };
+
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const em = document.getElementById('auth-email').value;
+            const pw = document.getElementById('auth-password').value;
+            if(!em || !pw) return;
+            const btn = document.getElementById('btn-login');
+            btn.innerHTML = "Memuat...";
+            signInWithEmailAndPassword(auth, em, pw)
+                .catch((e) => {
+                    showMessage("Login Gagal", e.message);
+                    btn.innerHTML = "Masuk Akses Admin";
+                });
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        if (isImmersive && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            signInWithCustomToken(auth, __initial_auth_token).then(() => initAppFlow());
+        } else {
+            initAppFlow();
+        }
+
+        // Pendaftaran Service Worker Terpisah
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker terdaftar', reg.scope))
+            .catch(err => console.warn('Service worker gagal:', err));
+    });
+}
+
+// Logika Tombol Install (PWA Prompt)
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Munculkan tombol install jika browser mendukung
+    document.querySelectorAll('.btn-install-app').forEach(btn => btn.classList.remove('hidden'));
+});
+
+window.installApp = async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('Aplikasi berhasil diinstal');
+            document.querySelectorAll('.btn-install-app').forEach(btn => btn.classList.add('hidden'));
+        }
+        deferredPrompt = null;
+    } else {
+        alert("Gunakan menu browser (titik tiga) lalu pilih 'Tambahkan ke Layar Utama' / 'Install App'.");
+    }
+};
+    </script>
+</body>
+</html>
