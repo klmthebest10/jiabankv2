@@ -1197,8 +1197,8 @@
             reader.onload = async (e) => {
                 const base64Data = e.target.result.split(',')[1];
                 
-                // UPDATE: Menggunakan model terbaru (2.5-flash) yang valid dan cepat
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                // UPDATE: Menggunakan model terbaru (3.8-flash) yang valid dan cepat
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
                 const payload = {
                     contents: [{
                         parts: [
@@ -1327,8 +1327,8 @@
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
-                // UPDATE: Menggunakan model terbaru (2.5-flash) yang valid dan cepat
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                // UPDATE: Menggunakan model terbaru (3.8-flash) yang valid dan cepat
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1502,8 +1502,8 @@
             }
 
             try {
-                // UPDATE: Menggunakan model terbaru (2.5-flash) yang valid dan cepat
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                // UPDATE: Menggunakan model terbaru (3.8-flash) yang valid dan cepat
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
