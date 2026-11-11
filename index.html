@@ -446,6 +446,10 @@
     .budget-row .input { padding: 9px 12px; }
     .note { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
     .status-line { font-size: 13px; margin-top: 8px; min-height: 18px; }
+    .status-box { margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.45; background: var(--surface-2); color: var(--text); display: flex; gap: 8px; align-items: flex-start; }
+    .status-box.ok { background: var(--in-soft); color: var(--in); }
+    .status-box.err { background: var(--out-soft); color: var(--out); }
+    .status-box .ic, .status-box .spinner { flex-shrink: 0; margin-top: 1px; }
 
     /* ============ SHEET / DIALOG / TOAST ============ */
     .sheet-wrap { position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; }
@@ -698,7 +702,7 @@
               <div class="set-h"><div class="si"><i data-ic="sparkles"></i></div><div><h3>Jia AI (Gemini)</h3><p>Dipakai untuk chat, scan nota, input suara, dan insight.</p></div></div>
               <label class="field"><span>API key Gemini</span>
                 <div class="input-wrap">
-                  <input class="input" type="password" id="ai-key" placeholder="AIza…" autocomplete="off">
+                  <input class="input" type="password" id="ai-key" placeholder="AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text">
                   <button type="button" data-act="toggle-pass" data-for="ai-key" aria-label="Tampilkan key"><i data-ic="eye"></i></button>
                 </div>
               </label>
@@ -706,10 +710,11 @@
                 <select class="input" id="ai-model"></select>
               </label>
               <div class="row-inline">
-                <button class="btn btn-primary" data-act="save-ai">Simpan & tes koneksi</button>
-                <button class="btn" data-act="load-models"><i data-ic="refresh" class="ic-sm"></i>Muat daftar model</button>
+                <button class="btn btn-primary" id="ai-save-btn" data-act="save-ai"><i data-ic="check" class="ic-sm"></i>Simpan & tes koneksi</button>
+                <button class="btn" data-act="load-models"><i data-ic="refresh" class="ic-sm"></i>Cek model</button>
+                <button class="btn btn-ghost" data-act="remove-ai">Hapus key</button>
               </div>
-              <div class="status-line" id="ai-status"></div>
+              <div class="status-box hidden" id="ai-status" role="status"></div>
               <p class="note">Key disimpan hanya di perangkat ini. Buat key gratis di Google AI Studio (aistudio.google.com) → Get API key.</p>
             </div>
 
@@ -775,7 +780,7 @@
 
             <div class="panel">
               <button class="btn btn-danger btn-block" data-act="logout"><i data-ic="logout"></i>Keluar akun</button>
-              <p class="note" style="text-align:center">JiaBank v3.0.2</p>
+              <p class="note" style="text-align:center">JiaBank v3.0.3</p>
             </div>
           </div>
         </div>
@@ -1747,37 +1752,89 @@
   /* =========================================================
      GEMINI
      ========================================================= */
-  const getKey = () => (localStorage.getItem(LS.key) || '').trim();
+  // Bersihkan key hasil tempel: spasi, baris baru, tanda kutip, karakter tak terlihat, atau teks "key=..."
+  const cleanKey = raw => {
+    const t = String(raw || '').normalize('NFKC');
+    const m = t.match(/AIza[0-9A-Za-z_\-]{20,}/);
+    return m ? m[0] : t.replace(/[\s"'`​-‍﻿]/g, '');
+  };
+  const getKey = () => cleanKey(localStorage.getItem(LS.key));
   const getModel = () => localStorage.getItem(LS.model) || DEFAULT_MODEL;
   class AIError extends Error { constructor(msg, code) { super(msg); this.code = code; } }
 
-  const gemini = async ({ system, contents, json = true, temperature = 0.4 }) => {
-    const key = getKey();
+  // Panggil API dengan key di URL (?key=) — cara paling kompatibel di browser HP.
+  const gFetch = async (path, key, body, timeoutMs = 60000) => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const sep = path.includes('?') ? '&' : '?';
+      const res = await fetch(`${GEMINI_BASE}/${path}${sep}key=${encodeURIComponent(key)}`, body ? {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal
+      } : { signal: ctrl.signal });
+      const data = await res.json().catch(() => ({}));
+      return { res, data };
+    } catch (e) {
+      if (e.name === 'AbortError') throw new AIError('Gemini terlalu lama menjawab. Coba lagi.', 'TIMEOUT');
+      throw new AIError(navigator.onLine ? 'Tidak bisa terhubung ke server Gemini (generativelanguage.googleapis.com). Coba matikan VPN/AdBlock/DNS pribadi, lalu coba lagi.' : 'HP sedang offline. Sambungkan internet lalu coba lagi.', 'NET');
+    } finally { clearTimeout(timer); }
+  };
+  const keyError = (status, msg) => {
+    const m = String(msg || '');
+    if (/API key not valid|API_KEY_INVALID|invalid api key/i.test(m)) return new AIError('API key tidak valid. Salin ulang key dari Google AI Studio (diawali "AIza").', 'KEY');
+    if (/expired/i.test(m)) return new AIError('API key sudah kedaluwarsa. Buat key baru di Google AI Studio.', 'KEY');
+    if (/referer|referrer|HTTP_REFERRER/i.test(m)) return new AIError('API key dibatasi untuk situs lain. Di Google Cloud Console → Credentials, hapus batasan "Website" atau tambahkan jiabank.vercel.app/*.', 'KEY');
+    if (/has not been used|is disabled|SERVICE_DISABLED|not enabled/i.test(m)) return new AIError('Generative Language API belum aktif untuk key ini. Buat key langsung dari aistudio.google.com agar otomatis aktif.', 'KEY');
+    if (/location is not supported|region/i.test(m)) return new AIError('Gemini API tidak tersedia dari lokasi/jaringan ini.', 'KEY');
+    if (status === 401 || status === 403) return new AIError(`Akses ditolak Google: ${m.slice(0, 160)}`, 'KEY');
+    return null;
+  };
+  let discoveredModels = null;
+  const listModelIds = async key => {
+    const { res, data } = await gFetch('models?pageSize=200', key, null, 20000);
+    if (!res.ok) throw keyError(res.status, data.error?.message) || new AIError(data.error?.message || `Gagal memuat model (${res.status})`, 'OTHER');
+    const list = (data.models || [])
+      .filter(m => (m.supportedGenerationMethods || []).includes('generateContent') && /gemini/.test(m.name) && !/(embedding|image|tts|audio|live|veo|imagen|robotics|computer-use|native)/i.test(m.name))
+      .map(m => m.name.replace('models/', ''));
+    const ver = s => parseFloat((s.match(/gemini-(\d+(?:\.\d+)?)/) || [0, 0])[1]);
+    const rank = s => (/flash/.test(s) && !/lite/.test(s) ? 0 : /lite/.test(s) ? 1 : 2) + (/preview|exp/.test(s) ? 3 : 0);
+    list.sort((a, b) => rank(a) - rank(b) || ver(b) - ver(a));
+    return list;
+  };
+
+  const gemini = async ({ system, contents, json = true, temperature = 0.4, key: keyArg }) => {
+    const key = keyArg || getKey();
     if (!key) throw new AIError('API key Gemini belum diisi. Buka Pengaturan → Jia AI.', 'NO_KEY');
-    const models = [...new Set([getModel(), ...FALLBACK_MODELS])];
+    const tried = new Set();
     let lastErr = null;
-    for (const m of models) {
-      let res, data;
-      try {
-        res = await fetch(`${GEMINI_BASE}/models/${encodeURIComponent(m)}:generateContent`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-          body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { temperature, ...(json ? { responseMimeType: 'application/json' } : {}) } })
-        });
-        data = await res.json().catch(() => ({}));
-      } catch (e) { throw new AIError('Tidak bisa terhubung ke Gemini. Periksa koneksi internet.', 'NET'); }
+    const attempt = async (m, useJson) => {
+      tried.add(m);
+      const body = { systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { temperature, ...(useJson ? { responseMimeType: 'application/json' } : {}) } };
+      const { res, data } = await gFetch(`models/${encodeURIComponent(m)}:generateContent`, key, body);
       if (res.ok) {
         const cand = data.candidates?.[0];
         const text = (cand?.content?.parts || []).filter(p => p.text && !p.thought).map(p => p.text).join('').trim();
-        if (!text) { lastErr = new AIError(data.promptFeedback?.blockReason ? 'Permintaan diblokir filter keamanan Gemini.' : 'Jawaban AI kosong. Coba lagi.', 'EMPTY'); continue; }
+        if (!text) { lastErr = new AIError(data.promptFeedback?.blockReason ? 'Permintaan diblokir filter keamanan Gemini.' : 'Jawaban AI kosong. Coba lagi.', 'EMPTY'); return null; }
         S.activeModel = m; renderChatHeader();
         return text;
       }
-      const msg = data.error?.message || res.statusText || 'Error';
-      if (res.status === 400 && /api key|API_KEY/i.test(msg) || res.status === 401 || res.status === 403) throw new AIError('API key ditolak Google. Periksa kembali key di Pengaturan.', 'KEY');
-      if (res.status === 404 || /not found|not supported|deprecated|no longer available/i.test(msg)) { lastErr = new AIError(`Model ${m} tidak tersedia.`, 'MODEL'); continue; }
-      if (res.status === 429) { lastErr = new AIError('Kuota Gemini habis atau terlalu sering. Tunggu sebentar lalu coba lagi.', 'QUOTA'); continue; }
-      if (res.status >= 500) { lastErr = new AIError('Server Gemini sedang sibuk. Coba lagi sebentar.', 'SERVER'); continue; }
-      throw new AIError(msg, 'OTHER');
+      const msg = data.error?.message || res.statusText || `HTTP ${res.status}`;
+      const kErr = keyError(res.status, msg); if (kErr) throw kErr;
+      if (res.status === 400 && useJson && /mime|json|response_mime_type|responseMimeType/i.test(msg)) return attempt(m, false);
+      if (res.status === 404 || /not found|not supported|deprecated|no longer available|unknown model/i.test(msg)) { lastErr = new AIError(`Model ${m} tidak tersedia untuk key ini.`, 'MODEL'); return null; }
+      if (res.status === 429) { lastErr = new AIError('Kuota Gemini habis atau terlalu sering dipakai. Tunggu 1 menit lalu coba lagi.', 'QUOTA'); return null; }
+      if (res.status >= 500) { lastErr = new AIError('Server Gemini sedang sibuk. Coba lagi sebentar.', 'SERVER'); return null; }
+      throw new AIError(`Gemini menolak permintaan: ${msg.slice(0, 200)}`, 'OTHER');
+    };
+    for (const m of [...new Set([getModel(), ...FALLBACK_MODELS])]) {
+      const t = await attempt(m, json); if (t !== null) return t;
+    }
+    // Semua model bawaan gagal → tanya Google model apa saja yang tersedia untuk key ini
+    if (lastErr?.code === 'MODEL' || lastErr?.code === 'QUOTA') {
+      try { discoveredModels = discoveredModels || await listModelIds(key); } catch (e) { if (e.code === 'KEY') throw e; }
+      for (const m of (discoveredModels || []).filter(x => !tried.has(x)).slice(0, 4)) {
+        const t = await attempt(m, json);
+        if (t !== null) { localStorage.setItem(LS.model, m); return t; }
+      }
     }
     throw lastErr || new AIError('Gagal menghubungi AI.', 'OTHER');
   };
@@ -2149,36 +2206,52 @@ ${financeContext()}`;
     fillModelSelect();
   };
 
-  const loadModels = async (silent = false) => {
-    const key = $('ai-key').value.trim() || getKey();
-    if (!key) { if (!silent) toast('Isi API key dulu', 'warn'); return; }
-    $('ai-status').textContent = 'Memuat daftar model…';
+  const aiStatus = (html, tone = '') => { const el = $('ai-status'); el.className = `status-box ${tone}`; el.innerHTML = html.replace(/^(<svg[\s\S]*?<\/svg>|<span class="spinner"[^>]*><\/span>)?\s*([\s\S]*)$/, (m, i, t) => `${i || ''}<span>${t}</span>`); el.classList.toggle('hidden', !html); };
+
+  const loadModels = async () => {
+    const key = cleanKey($('ai-key').value) || getKey();
+    if (!key) { aiStatus('Tempel API key dulu di kolom di atas.', 'err'); return; }
+    aiStatus('<span class="spinner" style="width:16px;height:16px"></span> Memuat daftar model…');
     try {
-      const res = await fetch(`${GEMINI_BASE}/models?pageSize=200`, { headers: { 'x-goog-api-key': key } });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || 'Gagal');
-      const list = (data.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent') && /gemini/.test(m.name) && !/(embedding|image|tts|audio|live|veo|imagen|robotics|computer-use)/i.test(m.name)).map(m => m.name.replace('models/', ''));
-      list.sort((a, b) => { const v = s => parseFloat((s.match(/gemini-(\d+(?:\.\d+)?)/) || [0, 0])[1]); return v(b) - v(a) || (a.includes('flash') ? -1 : 1); });
+      const list = await listModelIds(key);
+      discoveredModels = list;
       localStorage.setItem(LS.models, JSON.stringify(list));
       fillModelSelect();
-      $('ai-status').innerHTML = `<span class="c-in">${list.length} model tersedia untuk key ini.</span>`;
-    } catch (e) { $('ai-status').innerHTML = `<span class="c-out">${esc(e.message)}</span>`; }
+      aiStatus(`${ic('check', 'ic-sm')} ${list.length} model tersedia untuk key ini. Pilih model lalu tekan Simpan.`, 'ok');
+    } catch (e) { aiStatus(`${ic('alert', 'ic-sm')} ${esc(e.message)}`, 'err'); }
   };
 
   const saveAI = async () => {
-    const k = $('ai-key').value.trim();
-    if (k) localStorage.setItem(LS.key, k);
-    localStorage.setItem(LS.model, $('ai-model').value || DEFAULT_MODEL);
-    if (!getKey()) { $('ai-status').innerHTML = '<span class="c-out">API key masih kosong.</span>'; return; }
-    $('ai-key').value = ''; $('ai-key').placeholder = 'Tersimpan (••••' + getKey().slice(-4) + ')';
-    $('ai-status').textContent = 'Menguji koneksi…';
+    const btn = $('ai-save-btn');
+    const typed = cleanKey($('ai-key').value);
+    if ($('ai-key').value.trim() && !typed) { aiStatus(`${ic('alert', 'ic-sm')} Isi kolom bukan API key yang valid.`, 'err'); return; }
+    const key = typed || getKey();
+    if (!key) { aiStatus(`${ic('alert', 'ic-sm')} API key masih kosong. Tempel key dari aistudio.google.com.`, 'err'); return; }
+    if (!/^AIza[0-9A-Za-z_\-]{30,}$/.test(key)) { aiStatus(`${ic('alert', 'ic-sm')} Format key tidak dikenal. Key Gemini biasanya diawali "AIza" dan panjangnya 39 karakter (yang kamu isi: ${key.length} karakter).`, 'err'); return; }
+    // Simpan dulu, apa pun hasil tesnya
+    try { localStorage.setItem(LS.key, key); localStorage.setItem(LS.model, $('ai-model').value || DEFAULT_MODEL); }
+    catch (e) { aiStatus(`${ic('alert', 'ic-sm')} Browser menolak menyimpan data (mode penyamaran/privat?). Buka JiaBank di tab biasa.`, 'err'); return; }
+    $('ai-key').value = ''; $('ai-key').placeholder = 'Tersimpan (••••' + key.slice(-4) + ')';
+    renderChatHeader();
+    btn.disabled = true;
+    aiStatus('<span class="spinner" style="width:16px;height:16px"></span> Key disimpan. Menguji koneksi ke Gemini…');
     try {
-      const raw = await gemini({ system: 'Balas JSON {"ok":true,"msg":"salam singkat 5 kata dari Jia"}', contents: [{ role: 'user', parts: [{ text: 'tes' }] }], temperature: 0 });
+      const raw = await gemini({ key, system: 'Balas JSON {"ok":true,"msg":"salam singkat maksimal 6 kata dari Jia"}', contents: [{ role: 'user', parts: [{ text: 'tes koneksi' }] }], temperature: 0.2 });
       const d = parseJSON(raw);
-      $('ai-status').innerHTML = `<span class="c-in">Terhubung ke ${esc(S.activeModel)}. ${esc(d?.msg || '')}</span>`;
-      if (S.activeModel !== getModel()) { localStorage.setItem(LS.model, S.activeModel); fillModelSelect(); }
+      if (S.activeModel && S.activeModel !== getModel()) localStorage.setItem(LS.model, S.activeModel);
+      fillModelSelect();
+      aiStatus(`${ic('check', 'ic-sm')} Terhubung ke <b>${esc(S.activeModel)}</b>. ${esc(d?.msg || raw.slice(0, 60))}`, 'ok');
+      toast('Jia AI siap dipakai');
       renderChatHeader(); refreshInsight(true);
-    } catch (e) { $('ai-status').innerHTML = `<span class="c-out">${esc(e.message)}</span>`; }
+    } catch (e) {
+      aiStatus(`${ic('alert', 'ic-sm')} Key tersimpan, tapi tes gagal: ${esc(e.message)}`, 'err');
+    } finally { btn.disabled = false; }
+  };
+
+  const removeAI = async () => {
+    if (!getKey()) return;
+    if (!await dialog({ title: 'Hapus API key?', text: 'Fitur AI akan nonaktif di perangkat ini sampai key diisi lagi.', ok: 'Hapus', danger: true })) return;
+    localStorage.removeItem(LS.key); $('ai-key').placeholder = 'AIza…'; aiStatus(''); renderChatHeader(); toast('API key dihapus');
   };
 
   const saveBudget = async () => {
@@ -2193,6 +2266,7 @@ ${financeContext()}`;
     try { await updateDoc(cfgRef(), { recap_day: r, currency: normCurrency($('set-currency').value) }); S.hist.period = 'active'; toast('Periode disimpan'); }
     catch (e) { toast('Gagal menyimpan', 'err'); }
   };
+  $('ai-key').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveAI(); } });
   $('set-autolock').addEventListener('change', e => { localStorage.setItem(LS.autolock, e.target.value); toast('Kunci otomatis diperbarui'); });
   $('theme-seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; localStorage.setItem(LS.theme, b.dataset.v); applyTheme(); });
 
@@ -2275,6 +2349,7 @@ ${financeContext()}`;
     'draft-remove': b => { S.drafts.splice(+b.dataset.i, 1); renderDrafts(); },
     'save-ai': () => saveAI(),
     'load-models': () => loadModels(),
+    'remove-ai': () => removeAI(),
     'save-budget': () => saveBudget(),
     'save-period': () => savePeriod(),
     'export-csv': () => exportCSV(),

@@ -3,7 +3,7 @@
  * - Aset statis & library Firebase: stale-while-revalidate
  * - Firestore, Auth, dan Gemini API tidak pernah di-cache
  */
-const VERSION = 'jiabank-v3.0.2';
+const VERSION = 'jiabank-v3.0.3';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {
