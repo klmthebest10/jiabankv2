@@ -767,7 +767,7 @@
 
             <div class="panel">
               <button class="btn btn-danger btn-block" data-act="logout"><i data-ic="logout"></i>Keluar akun</button>
-              <p class="note" style="text-align:center">JiaBank v3.0</p>
+              <p class="note" style="text-align:center">JiaBank v3.0.1</p>
             </div>
           </div>
         </div>
@@ -1032,7 +1032,20 @@
 
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const cur = () => S.config.currency || '₩';
+  const normCurrency = v => {
+    let c = String(v ?? '').trim();
+    // decode kode HTML lama seperti &#8361; / &#x20A9; / &amp;#8361;
+    for (let i = 0; i < 2 && /&/.test(c); i++) {
+      c = c.replace(/&amp;/gi, '&')
+        .replace(/&#x([0-9a-f]+);?/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+        .replace(/&#(\d+);?/g, (_, d) => String.fromCodePoint(Number(d)))
+        .replace(/&(?:won|krw);?/gi, '₩');
+    }
+    const map = { KRW: '₩', WON: '₩', '원': '₩', '￦': '₩', IDR: 'Rp', RP: 'Rp', USD: '$', JPY: '¥', EUR: '€' };
+    c = map[c.toUpperCase()] || c;
+    return c && c.length <= 4 && !/[&<>#;]/.test(c) ? c : '₩';
+  };
+  const cur = () => normCurrency(S.config.currency);
   const fmt = (n, sign = false) => {
     const v = Math.round(Number(n) || 0);
     const s = Math.abs(v).toLocaleString('id-ID');
@@ -1354,6 +1367,9 @@
       const first = !S.configLoaded;
       S.config = { ...DEFAULT_CONFIG, ...snap.data() };
       S.configLoaded = true;
+      // perbaiki otomatis mata uang yang tersimpan sebagai kode HTML
+      const fixedCur = normCurrency(S.config.currency);
+      if (S.config.currency !== fixedCur) { S.config.currency = fixedCur; updateDoc(cfgRef(), { currency: fixedCur }).catch(() => {}); }
       if (first) {
         pad.enable(true);
         showLock(S.config.pattern_hash ? 'unlock' : 'create');
@@ -2114,7 +2130,7 @@ ${financeContext()}`;
   };
   const fillSettings = () => {
     $('set-recap').value = S.config.recap_day;
-    $('set-currency').value = S.config.currency || '₩';
+    $('set-currency').value = cur();
     $('recap-note').textContent = `Periode berjalan: ${calcPeriod(new Date(), S.config.recap_day).label}`;
     $('budget-total').value = S.config.budget_total ? Number(S.config.budget_total).toLocaleString('id-ID') : '';
     const b = S.config.budgets || {};
@@ -2166,7 +2182,7 @@ ${financeContext()}`;
   const savePeriod = async () => {
     const r = parseInt($('set-recap').value, 10);
     if (!(r >= 1 && r <= 28)) { toast('Tanggal tutup buku harus 1–28', 'warn'); return; }
-    try { await updateDoc(cfgRef(), { recap_day: r, currency: $('set-currency').value }); S.hist.period = 'active'; toast('Periode disimpan'); }
+    try { await updateDoc(cfgRef(), { recap_day: r, currency: normCurrency($('set-currency').value) }); S.hist.period = 'active'; toast('Periode disimpan'); }
     catch (e) { toast('Gagal menyimpan', 'err'); }
   };
   $('set-autolock').addEventListener('change', e => { localStorage.setItem(LS.autolock, e.target.value); toast('Kunci otomatis diperbarui'); });
