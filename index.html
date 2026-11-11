@@ -702,7 +702,7 @@
               <div class="set-h"><div class="si"><i data-ic="sparkles"></i></div><div><h3>Jia AI (Gemini)</h3><p>Dipakai untuk chat, scan nota, input suara, dan insight.</p></div></div>
               <label class="field"><span>API key Gemini</span>
                 <div class="input-wrap">
-                  <input class="input" type="password" id="ai-key" placeholder="AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text">
+                  <input class="input" type="password" id="ai-key" placeholder="AQ.… atau AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text">
                   <button type="button" data-act="toggle-pass" data-for="ai-key" aria-label="Tampilkan key"><i data-ic="eye"></i></button>
                 </div>
               </label>
@@ -715,7 +715,7 @@
                 <button class="btn btn-ghost" data-act="remove-ai">Hapus key</button>
               </div>
               <div class="status-box hidden" id="ai-status" role="status"></div>
-              <p class="note">Key disimpan hanya di perangkat ini. Buat key gratis di Google AI Studio (aistudio.google.com) → Get API key.</p>
+              <p class="note">Key disimpan hanya di perangkat ini. Buat key gratis di aistudio.google.com/api-keys → Create API key, lalu ketuk ikon salin. Format baru (AQ.…) dan lama (AIza…) sama-sama didukung.</p>
             </div>
 
             <div class="panel">
@@ -780,7 +780,7 @@
 
             <div class="panel">
               <button class="btn btn-danger btn-block" data-act="logout"><i data-ic="logout"></i>Keluar akun</button>
-              <p class="note" style="text-align:center">JiaBank v3.0.3</p>
+              <p class="note" style="text-align:center">JiaBank v3.0.4</p>
             </div>
           </div>
         </div>
@@ -1755,32 +1755,51 @@
   // Bersihkan key hasil tempel: spasi, baris baru, tanda kutip, karakter tak terlihat, atau teks "key=..."
   const cleanKey = raw => {
     const t = String(raw || '').normalize('NFKC');
-    const m = t.match(/AIza[0-9A-Za-z_\-]{20,}/);
+    const m = t.match(/AIza[0-9A-Za-z_\-]{20,}|AQ\.[0-9A-Za-z_\-.]{20,}/);
     return m ? m[0] : t.replace(/[\s"'`​-‍﻿]/g, '');
   };
   const getKey = () => cleanKey(localStorage.getItem(LS.key));
   const getModel = () => localStorage.getItem(LS.model) || DEFAULT_MODEL;
   class AIError extends Error { constructor(msg, code) { super(msg); this.code = code; } }
 
-  // Panggil API dengan key di URL (?key=) — cara paling kompatibel di browser HP.
-  const gFetch = async (path, key, body, timeoutMs = 60000) => {
+  // Kirim request ke Gemini. Key baru (AQ.…) resmi lewat header x-goog-api-key, key lama (AIza…) bisa
+  // lewat header atau ?key=. Kalau satu cara ditolak/terblokir, cara lain dicoba lalu diingat.
+  const AUTH_LS = 'jiabank_gemini_auth';
+  const gFetchOnce = async (path, key, body, mode, timeoutMs) => {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
-      const sep = path.includes('?') ? '&' : '?';
-      const res = await fetch(`${GEMINI_BASE}/${path}${sep}key=${encodeURIComponent(key)}`, body ? {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal
-      } : { signal: ctrl.signal });
+      const url = mode === 'query' ? `${GEMINI_BASE}/${path}${path.includes('?') ? '&' : '?'}key=${encodeURIComponent(key)}` : `${GEMINI_BASE}/${path}`;
+      const headers = mode === 'query' ? {} : { 'x-goog-api-key': key };
+      if (body) headers['Content-Type'] = 'application/json';
+      const res = await fetch(url, { method: body ? 'POST' : 'GET', headers, body: body ? JSON.stringify(body) : undefined, signal: ctrl.signal });
       const data = await res.json().catch(() => ({}));
       return { res, data };
     } catch (e) {
       if (e.name === 'AbortError') throw new AIError('Gemini terlalu lama menjawab. Coba lagi.', 'TIMEOUT');
-      throw new AIError(navigator.onLine ? 'Tidak bisa terhubung ke server Gemini (generativelanguage.googleapis.com). Coba matikan VPN/AdBlock/DNS pribadi, lalu coba lagi.' : 'HP sedang offline. Sambungkan internet lalu coba lagi.', 'NET');
+      throw new AIError(navigator.onLine ? 'Tidak bisa terhubung ke server Gemini. Coba matikan VPN/AdBlock/DNS pribadi, lalu coba lagi.' : 'HP sedang offline. Sambungkan internet lalu coba lagi.', 'NET');
     } finally { clearTimeout(timer); }
+  };
+  const isAuthFail = r => r.res.status === 401 || r.res.status === 403 || (r.res.status === 400 && /api key|API_KEY|credential|authenticat|token/i.test(r.data?.error?.message || ''));
+  const gFetch = async (path, key, body, timeoutMs = 60000) => {
+    const pref = localStorage.getItem(AUTH_LS) === 'query' ? 'query' : 'header';
+    const modes = [pref, pref === 'header' ? 'query' : 'header'];
+    let firstResp = null, firstErr = null;
+    for (let i = 0; i < modes.length; i++) {
+      try {
+        const r = await gFetchOnce(path, key, body, modes[i], timeoutMs);
+        if (!isAuthFail(r)) { if (i > 0) localStorage.setItem(AUTH_LS, modes[i]); return r; }
+        firstResp = firstResp || r;
+      } catch (e) { if (e.code === 'TIMEOUT') throw e; firstErr = firstErr || e; }
+    }
+    if (firstResp) return firstResp;
+    throw firstErr;
   };
   const keyError = (status, msg) => {
     const m = String(msg || '');
-    if (/API key not valid|API_KEY_INVALID|invalid api key/i.test(m)) return new AIError('API key tidak valid. Salin ulang key dari Google AI Studio (diawali "AIza").', 'KEY');
+    if (/ACCESS_TOKEN_TYPE_UNSUPPORTED/i.test(m)) return new AIError('Google menolak key format AQ untuk akun ini (masalah dari pihak Google pada sebagian akun). Solusi: buat key baru di AI Studio dan tunggu ±5 menit, atau buat API key di console.cloud.google.com → APIs & Services → Credentials, lalu batasi key itu ke "Generative Language API".', 'KEY');
+    if (/unrestricted/i.test(m)) return new AIError('Key lama tanpa batasan tidak diterima lagi oleh Google. Di Google Cloud Console → Credentials, batasi key ke "Generative Language API", atau buat key baru di AI Studio.', 'KEY');
+    if (/API key not valid|API_KEY_INVALID|invalid api key|invalid_api_key/i.test(m)) return new AIError('API key tidak valid. Salin ulang key lengkap dari Google AI Studio (ketuk ikon salin di sebelah key).', 'KEY');
     if (/expired/i.test(m)) return new AIError('API key sudah kedaluwarsa. Buat key baru di Google AI Studio.', 'KEY');
     if (/referer|referrer|HTTP_REFERRER/i.test(m)) return new AIError('API key dibatasi untuk situs lain. Di Google Cloud Console → Credentials, hapus batasan "Website" atau tambahkan jiabank.vercel.app/*.', 'KEY');
     if (/has not been used|is disabled|SERVICE_DISABLED|not enabled/i.test(m)) return new AIError('Generative Language API belum aktif untuk key ini. Buat key langsung dari aistudio.google.com agar otomatis aktif.', 'KEY');
@@ -2227,7 +2246,7 @@ ${financeContext()}`;
     if ($('ai-key').value.trim() && !typed) { aiStatus(`${ic('alert', 'ic-sm')} Isi kolom bukan API key yang valid.`, 'err'); return; }
     const key = typed || getKey();
     if (!key) { aiStatus(`${ic('alert', 'ic-sm')} API key masih kosong. Tempel key dari aistudio.google.com.`, 'err'); return; }
-    if (!/^AIza[0-9A-Za-z_\-]{30,}$/.test(key)) { aiStatus(`${ic('alert', 'ic-sm')} Format key tidak dikenal. Key Gemini biasanya diawali "AIza" dan panjangnya 39 karakter (yang kamu isi: ${key.length} karakter).`, 'err'); return; }
+    if (!/^[A-Za-z0-9._\-]{20,}$/.test(key)) { aiStatus(`${ic('alert', 'ic-sm')} Isi kolom tidak terlihat seperti API key. Key Gemini diawali "AQ." (format baru) atau "AIza" (format lama).`, 'err'); return; }
     // Simpan dulu, apa pun hasil tesnya
     try { localStorage.setItem(LS.key, key); localStorage.setItem(LS.model, $('ai-model').value || DEFAULT_MODEL); }
     catch (e) { aiStatus(`${ic('alert', 'ic-sm')} Browser menolak menyimpan data (mode penyamaran/privat?). Buka JiaBank di tab biasa.`, 'err'); return; }
@@ -2251,7 +2270,7 @@ ${financeContext()}`;
   const removeAI = async () => {
     if (!getKey()) return;
     if (!await dialog({ title: 'Hapus API key?', text: 'Fitur AI akan nonaktif di perangkat ini sampai key diisi lagi.', ok: 'Hapus', danger: true })) return;
-    localStorage.removeItem(LS.key); $('ai-key').placeholder = 'AIza…'; aiStatus(''); renderChatHeader(); toast('API key dihapus');
+    localStorage.removeItem(LS.key); $('ai-key').placeholder = 'AQ.… atau AIza…'; aiStatus(''); renderChatHeader(); toast('API key dihapus');
   };
 
   const saveBudget = async () => {
