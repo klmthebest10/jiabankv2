@@ -137,27 +137,35 @@
     .auth-card h1 { font-size: 34px; letter-spacing: -.035em; margin: 22px 0 6px; font-weight: 800; }
     .auth-card > p { margin: 0 0 28px; color: var(--muted); }
 
-    .lock { flex-direction: column; text-align: center; gap: 4px; }
+    .lock { flex-direction: column; text-align: center; gap: 4px; overflow-y: auto; }
     .lock h2 { margin: 18px 0 2px; font-size: 22px; letter-spacing: -.02em; }
-    .lock p { margin: 0; color: var(--muted); min-height: 22px; }
+    .lock p { margin: 0; color: var(--muted); min-height: 22px; font-size: 14px; max-width: 300px; }
     .lock p.err { color: var(--out); font-weight: 600; }
     .lock-actions { display: flex; gap: 18px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
     .link { color: var(--brand); font-weight: 600; font-size: 14px; padding: 6px 4px; }
     .link.danger { color: var(--out); }
 
     /* Pattern pad */
-    .pad { position: relative; width: 264px; height: 264px; margin: 26px auto 8px; touch-action: none; user-select: none; -webkit-user-select: none; }
-    .pad svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-    .pad polyline { fill: none; stroke: var(--brand); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
+    .pad {
+      position: relative; width: min(78vw, 300px); aspect-ratio: 1; margin: 28px auto 12px;
+      touch-action: none; user-select: none; -webkit-user-select: none;
+      background: var(--surface); border: 1px solid var(--line); border-radius: 28px;
+    }
+    .pad svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+    .pad polyline { fill: none; stroke: var(--brand); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; opacity: .55; }
     .pad.bad polyline { stroke: var(--out); }
     .pad.good polyline { stroke: var(--in); }
-    .pad-dot { position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; display: grid; place-items: center; }
-    .pad-dot::after { content: ''; width: 16px; height: 16px; border-radius: 50%; background: var(--faint); transition: transform .15s, background .15s; }
-    .pad-dot.on::after { background: var(--brand); transform: scale(1.5); box-shadow: 0 0 0 8px var(--brand-soft); }
-    .pad.bad .pad-dot.on::after { background: var(--out); box-shadow: 0 0 0 8px var(--out-soft); }
-    .pad.good .pad-dot.on::after { background: var(--in); box-shadow: 0 0 0 8px var(--in-soft); }
+    .pad-dot { position: absolute; width: 22%; aspect-ratio: 1; transform: translate(-50%, -50%); display: grid; place-items: center; border-radius: 50%; transition: background .15s; }
+    .pad-dot::before { content: ''; position: absolute; inset: 18%; border-radius: 50%; border: 2px solid transparent; transition: border-color .15s, transform .15s; }
+    .pad-dot::after { content: ''; width: 18%; aspect-ratio: 1; border-radius: 50%; background: var(--faint); transition: transform .15s, background .15s; }
+    .pad-dot.on::before { border-color: var(--brand); transform: scale(1.05); }
+    .pad-dot.on::after { background: var(--brand); transform: scale(1.35); }
+    .pad.bad .pad-dot.on::before { border-color: var(--out); } .pad.bad .pad-dot.on::after { background: var(--out); }
+    .pad.good .pad-dot.on::before { border-color: var(--in); } .pad.good .pad-dot.on::after { background: var(--in); }
     .pad.shake { animation: shake .35s; }
+    .pad.off { opacity: .45; }
     @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+    @media (max-height: 640px) { .lock .mark { display: none; } .pad { width: min(70vw, 260px); margin: 16px auto 8px; } }
 
     /* ============ FORM CONTROLS ============ */
     .field { display: block; margin-bottom: 14px; }
@@ -767,7 +775,7 @@
 
             <div class="panel">
               <button class="btn btn-danger btn-block" data-act="logout"><i data-ic="logout"></i>Keluar akun</button>
-              <p class="note" style="text-align:center">JiaBank v3.0.1</p>
+              <p class="note" style="text-align:center">JiaBank v3.0.2</p>
             </div>
           </div>
         </div>
@@ -1199,7 +1207,7 @@
     for (let i = 0; i < 9; i++) {
       const el = document.createElement('div');
       el.className = 'pad-dot';
-      const x = (i % 3) * 50 + 16.66, y = Math.floor(i / 3) * 50 + 16.66;
+      const x = (i % 3) * 33.333 + 16.667, y = Math.floor(i / 3) * 33.333 + 16.667;
       el.style.left = x + '%'; el.style.top = y + '%';
       container.appendChild(el); dots.push({ el, x, y });
     }
@@ -1210,7 +1218,7 @@
     const hit = pos => {
       dots.forEach((d, i) => {
         if (seq.includes(i)) return;
-        if (Math.hypot(d.x - pos.x, d.y - pos.y) < 13) {
+        if (Math.hypot(d.x - pos.x, d.y - pos.y) < 11) {
           // isi titik tengah yang dilewati (perilaku seperti Android)
           const last = seq[seq.length - 1];
           if (last !== undefined) {
@@ -1238,7 +1246,7 @@
     return {
       reset,
       flash: (kind, ms = 700) => new Promise(r => { container.classList.add(kind); if (kind === 'bad') container.classList.add('shake'); setTimeout(() => { reset(); r(); }, ms); }),
-      enable: v => { enabled = v; }
+      enable: v => { enabled = v; container.classList.toggle('off', !v); }
     };
   };
 
